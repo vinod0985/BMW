@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ericsson.swgw.da.controller.TestControllerApplication
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.435 s - in com.ericsson.swgw.da.controller.TestControllerApplication

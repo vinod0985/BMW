@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FTPFile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.xml.parser</a> &gt; <span class="el_source">FTPFile.java</span></div><h1>FTPFile.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.xml.parser;
+
+import java.io.Serializable;
+import java.util.Calendar;
+
+<span class="nc" id="L6">public class FTPFile implements Serializable {</span>
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5125205137390969468L;
+	public static final int FILE_TYPE = 0;
+	public static final int DIRECTORY_TYPE = 1;
+	public static final int SYMBOLIC_LINK_TYPE = 2;
+	public static final int UNKNOWN_TYPE = 3;
+	public static final int USER_ACCESS = 0;
+	public static final int GROUP_ACCESS = 1;
+	public static final int WORLD_ACCESS = 2;
+	public static final int READ_PERMISSION = 0;
+	public static final int WRITE_PERMISSION = 1;
+	public static final int EXECUTE_PERMISSION = 2;
+<span class="nc" id="L21">	int _type = 3;</span>
+<span class="nc" id="L22">	int _hardLinkCount = 0;</span>
+<span class="nc" id="L23">	long _size = 0L;</span>
+<span class="nc" id="L24">	String _rawListing = null;</span>
+<span class="nc" id="L25">	String _user = null;</span>
+<span class="nc" id="L26">	String _group = null;</span>
+<span class="nc" id="L27">	String _name = null;</span>
+	String _link;
+<span class="nc" id="L29">	Calendar _date = null;</span>
+<span class="nc" id="L30">	boolean[][] _permissions = new boolean[3][3];</span>
+
+	public void setRawListing(String rawListing) {
+<span class="nc" id="L33">		this._rawListing = rawListing;</span>
+<span class="nc" id="L34">	}</span>
+
+	public String getRawListing() {
+<span class="nc" id="L37">		return this._rawListing;</span>
+	}
+
+	public boolean isDirectory() {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">		return this._type == 1;</span>
+	}
+
+	public boolean isFile() {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">		return this._type == 0;</span>
+	}
+
+	public boolean isSymbolicLink() {
+<span class="nc bnc" id="L49" title="All 2 branches missed.">		return this._type == 2;</span>
+	}
+
+	public boolean isUnknown() {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">		return this._type == 3;</span>
+	}
+
+	public void setType(int type) {
+<span class="nc" id="L57">		this._type = type;</span>
+<span class="nc" id="L58">	}</span>
+
+	public int getType() {
+<span class="nc" id="L61">		return this._type;</span>
+	}
+
+	public void setName(String name) {
+<span class="nc" id="L65">		this._name = name;</span>
+<span class="nc" id="L66">	}</span>
+
+	public String getName() {
+<span class="nc" id="L69">		return this._name;</span>
+	}
+
+	public void setSize(long size) {
+<span class="nc" id="L73">		this._size = size;</span>
+<span class="nc" id="L74">	}</span>
+
+	public long getSize() {
+<span class="nc" id="L77">		return this._size;</span>
+	}
+
+	public void setHardLinkCount(int links) {
+<span class="nc" id="L81">		this._hardLinkCount = links;</span>
+<span class="nc" id="L82">	}</span>
+
+	public int getHardLinkCount() {
+<span class="nc" id="L85">		return this._hardLinkCount;</span>
+	}
+
+	public void setGroup(String group) {
+<span class="nc" id="L89">		this._group = group;</span>
+<span class="nc" id="L90">	}</span>
+
+	public String getGroup() {
+<span class="nc" id="L93">		return this._group;</span>
+	}
+
+	public void setUser(String user) {
+<span class="nc" id="L97">		this._user = user;</span>
+<span class="nc" id="L98">	}</span>
+
+	public String getUser() {
+<span class="nc" id="L101">		return this._user;</span>
+	}
+
+	public void setLink(String link) {
+<span class="nc" id="L105">		this._link = link;</span>
+<span class="nc" id="L106">	}</span>
+
+	public String getLink() {
+<span class="nc" id="L109">		return this._link;</span>
+	}
+
+	public void setTimestamp(Calendar date) {
+<span class="nc" id="L113">		this._date = date;</span>
+<span class="nc" id="L114">	}</span>
+
+	public Calendar getTimestamp() {
+<span class="nc" id="L117">		return this._date;</span>
+	}
+
+	public void setPermission(int access, int permission, boolean value) {
+<span class="nc" id="L121">		this._permissions[access][permission] = value;</span>
+<span class="nc" id="L122">	}</span>
+
+	public boolean hasPermission(int access, int permission) {
+<span class="nc" id="L125">		return this._permissions[access][permission];</span>
+	}
+
+	public String toString() {
+<span class="nc" id="L129">		return this._rawListing;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

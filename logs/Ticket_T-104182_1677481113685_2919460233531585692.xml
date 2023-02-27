@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Ticket>
+    <TicketID>T-104182</TicketID>
+    <Header>test-issue-1</Header>
+    <Description>test-issue-1</Description>
+    <Boxes>
+        <Box>
+            <ProductNumber>CXP901019</ProductNumber>
+            <RState>R1A</RState>
+            <TypeOfProduct>Product Box</TypeOfProduct>
+            <Description></Description>
+            <FileSize>4783385</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>UATDEMO</FunctionDesignation>
+            <MD5>2ad721801d20275ea01455cc0db8c9b8</MD5>
+            <SHA256>1623ab8129f9e53dcfcf47ef9601705e2551b4c6e127115b0011a460b5248d0b</SHA256>
+            <Filename>CXP901019-R1A.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>109 47-CXP 902 0621-05</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>ReleaseNote_109_47-CXP_902_0621-05-A_EN_CXP901019-R1A.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-NMS/CXP 902 0621-06</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>NMS_CXP901019-R1A.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>109 47-CXP 902 0621-05</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>ReleaseNote_109_47-CXP_902_0621-05-A_EN_CXP901019-R1A.docx</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>1553-CXP 902 0621-04</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Unit_testing_dataTest_END.abd</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>1553-CXP 902 0621-46</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Text_documentfor_unit_testing.txt</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EU</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.doc</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+    </Boxes>
+</Ticket>

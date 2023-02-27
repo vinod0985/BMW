@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Ticket>
+    <TicketID>T-104183</TicketID>
+    <Header>TEST2703HF</Header>
+    <Description>TEST2703HF</Description>
+    <Boxes>
+        <Box>
+            <ProductNumber>CXP901030</ProductNumber>
+            <RState>R10B</RState>
+            <TypeOfProduct>Product Box</TypeOfProduct>
+            <Description></Description>
+            <FileSize>3272633</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>CRTBOXE</FunctionDesignation>
+            <MD5>fbfe728c13e9d11c1e8dbb282b0d5eee</MD5>
+            <SHA256>bcc072c92544825d16e824ad4151e753f7608637e483bd10f6467ee2bf9b9be0</SHA256>
+            <Filename>CXP901030-R10B.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>190 89-NMS/CXP 902 0621-06</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>NMS_CXP901030-R10B.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.doc</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+    </Boxes>
+</Ticket>

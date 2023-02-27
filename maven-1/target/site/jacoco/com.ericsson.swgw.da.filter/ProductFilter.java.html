@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.filter</a> &gt; <span class="el_source">ProductFilter.java</span></div><h1>ProductFilter.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.filter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.ericsson.swgw.da.actions.TriggerDownloadNotification;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.constants.IniConstants;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+<span class="nc" id="L16">public class ProductFilter {</span>
+<span class="fc" id="L17">	private static  Logger logger = LogManager.getLogger(ProductFilter.class);</span>
+
+	public static Boolean isVerifyProducts(){
+<span class="fc" id="L20">		Boolean bReturn = false;</span>
+<span class="fc" id="L21">		String sVerifyProducts =   IniConfig.getDAVerifyProducts();</span>
+<span class="pc bpc" id="L22" title="3 of 4 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(sVerifyProducts) &amp;&amp; Constants.TRUE.equalsIgnoreCase(sVerifyProducts)) {</span>
+<span class="nc" id="L23">			logger.debug(&quot;verify_products is True hence procced for products Filter&quot;);</span>
+<span class="nc" id="L24">			bReturn = true;</span>
+			
+		} else {
+<span class="fc" id="L27">			logger.debug(&quot;verify_products is False hence products Filter Not Required&quot;);</span>
+		}		
+<span class="fc" id="L29">		return bReturn;	</span>
+	}
+	
+	public static Boolean isDownloadEntireTicket(){
+<span class="fc" id="L33">		Boolean bReturn = false;</span>
+<span class="fc" id="L34">		String sDownloadEntireTicket =   IniConfig.getDADownloadEntireTicket();</span>
+<span class="pc bpc" id="L35" title="3 of 4 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(sDownloadEntireTicket) &amp;&amp; Constants.TRUE.equalsIgnoreCase(sDownloadEntireTicket)) {</span>
+<span class="nc" id="L36">			logger.debug(&quot;verify_products is True hence procced for products Filter&quot;);</span>
+<span class="nc" id="L37">			bReturn = true;</span>
+			
+		} else {
+<span class="fc" id="L40">			logger.debug(&quot;verify_products is False hence products Filter Not Required&quot;);</span>
+		}		
+<span class="fc" id="L42">		return bReturn;	</span>
+	}
+	
+	
+	public static List&lt;String&gt;  getproductsFilterList (){
+<span class="fc" id="L47">		List&lt;String&gt; productsFilterList = new ArrayList&lt;String&gt;();</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">		if(isVerifyProducts() || isDownloadEntireTicket()){</span>
+<span class="nc" id="L49">			List liProducts = IniConfig.getDefaultAttProducts();</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">			for (Object object : liProducts) {</span>
+<span class="nc" id="L51">				String sProductSectionName = (String) object;				</span>
+<span class="nc" id="L52">				Map mpProductMap = IniConfig.getProductMap(sProductSectionName.trim());									</span>
+<span class="nc" id="L53">				String sSWProductNo =  (String) mpProductMap.get(IniConstants.INI_PRODUCTS_SW_PRODUCT_NO);				</span>
+<span class="nc" id="L54">				productsFilterList.add(sSWProductNo);</span>
+<span class="nc" id="L55">			}</span>
+		}		
+<span class="fc" id="L57">		return productsFilterList;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

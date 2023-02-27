@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Scanning.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.actions</a> &gt; <span class="el_source">Scanning.java</span></div><h1>Scanning.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.actions;
+
+/*###################################################################################
+#  @Name           :   Scanning.java
+#
+#  @Created        :   Nov Drop 2022
+#
+#  @Description    :   To Connect CAS-C and Scan Packages
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2211
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      29-Oct-2022            Scanning action
+######################################################################################*/
+
+import io.minio.errors.MinioException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.springframework.stereotype.Component;
+
+import com.ericsson.swgw.da.bean.DMSBean;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.dms.DMSService;
+import com.ericsson.swgw.da.exception.CustomException;
+import com.ericsson.swgw.da.exception.SignatureValidationException;
+import com.ericsson.swgw.da.filter.ProductFilter;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.services.PullTicketXMLService;
+import com.ericsson.swgw.da.swgw.bean.TicketXMLGenerator;
+import com.ericsson.swgw.da.utils.ChecksumUtils;
+import com.ericsson.swgw.da.utils.FileUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+import com.ericsson.swgw.da.validations.ChecksumValidation;
+import com.ericsson.swgw.da.validations.SignatureValidation;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
+
+@Component
+public class Scanning {
+	private static ChannelSftp sftpChannel;
+	
+	 /*public Scanning(ChannelSftp scSftpChannel, LoadProperties scloadProperties) {
+		 loadProperties = scloadProperties;
+		 sftpChannel= scSftpChannel;
+	}*/
+	 
+<span class="fc" id="L64">	 public Scanning(ChannelSftp scSftpChannel) {</span>
+<span class="fc" id="L65">		 sftpChannel= scSftpChannel;</span>
+<span class="fc" id="L66">	}</span>
+	 
+<span class="fc" id="L68">	private static  Logger logger = LogManager.getLogger(Scanning.class);</span>
+	private static final String JSONFIELD_SHA256 = &quot;sha256&quot;;
+	private static final String JSONFIELD_MD5 = &quot;md5&quot;;
+	
+	@SuppressWarnings(&quot;unchecked&quot;)
+    public static List&lt;String&gt; ticketXmlListFiles(ChannelSftp channel, String remoteDir, long daScanInterval) throws SftpException, JSchException {
+<span class="fc" id="L74">        java.util.Date currentDate = new java.util.Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(daScanInterval));</span>
+<span class="fc" id="L75">        logger.info(&quot; Current TimeUnit during scan period :::: &quot;+currentDate);</span>
+<span class="fc" id="L76">        channel.cd(remoteDir);</span>
+<span class="fc" id="L77">        Vector&lt;ChannelSftp.LsEntry&gt; files = channel.ls(&quot;.&quot;);</span>
+<span class="fc" id="L78">        List&lt;String&gt; listTicketXMLS = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for(int i=0; i&lt;files.size();i++){</span>
+<span class="fc" id="L80">        	ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) files.get(i);</span>
+<span class="fc bfc" id="L81" title="All 4 branches covered.">            if(entry.getFilename().startsWith(&quot;Ticket_T-&quot;) &amp;&amp; entry.getFilename().endsWith(&quot;.xml&quot;)){</span>
+<span class="fc" id="L82">            	String str = entry.getFilename();</span>
+                //logger.info(&quot;TicketXml Name ::::::::::: &quot;+str);
+<span class="fc" id="L84">            	SftpATTRS attrs = entry.getAttrs();</span>
+<span class="fc" id="L85">            	int modificationTime = attrs.getMTime();</span>
+<span class="fc" id="L86">            	java.util.Date modificationDate = new java.util.Date(modificationTime * 1000L);</span>
+<span class="pc bpc" id="L87" title="2 of 4 branches missed.">                if(modificationDate.after(currentDate) || modificationDate.equals(currentDate)){</span>
+<span class="nc" id="L88">                	String remoteTicketxmlName = entry.getFilename();</span>
+<span class="nc" id="L89">                	listTicketXMLS.add(remoteTicketxmlName);</span>
+                }
+            }
+        }
+        
+<span class="fc" id="L94">        return listTicketXMLS;</span>
+    }
+
+	public static List&lt;String&gt; transferFiles(ChannelSftp sftpChannel, List&lt;String&gt; listFiles, String sourceDir, String destinationDir) throws JSchException, SftpException {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">		if(listFiles.isEmpty()){</span>
+<span class="fc" id="L99">			return Collections.emptyList();</span>
+		}else{
+<span class="nc" id="L101">			sftpChannel.cd(sourceDir);</span>
+<span class="nc" id="L102">			logger.info(&quot;Transfer of  files to local Folder is  Started....&quot;);</span>
+<span class="nc" id="L103">			List&lt;String&gt; destFiles = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">			for (String remoteFileName : listFiles) {</span>
+<span class="nc" id="L105">				String destFileName=&quot;&quot;;</span>
+<span class="nc" id="L106">				StringBuilder sbDestFile = new StringBuilder();</span>
+<span class="nc" id="L107">				sbDestFile.append(destinationDir);</span>
+<span class="nc" id="L108">				sbDestFile.append(Constants.BACK_SLASH);</span>
+<span class="nc" id="L109">				sbDestFile.append(remoteFileName.replace(&quot;/&quot;, &quot;_&quot;).replaceAll(&quot;\\s+$&quot;, &quot;&quot;));</span>
+<span class="nc" id="L110">				destFileName=sbDestFile.toString();</span>
+<span class="nc" id="L111">				sftpChannel.get(remoteFileName, destFileName);</span>
+<span class="nc" id="L112">				destFiles.add(remoteFileName);</span>
+<span class="nc" id="L113">			}</span>
+<span class="nc" id="L114">			logger.info(&quot;Transfer of  files to local Folder is  completed....&quot;);</span>
+<span class="nc" id="L115">			return destFiles;</span>
+		}
+		
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public static List&lt;String&gt; boxlistFiles(ChannelSftp sftpChannel,
+			String productNumber, String productVersion, String sourceDir) throws SftpException {
+<span class="nc" id="L123">		sftpChannel.cd(sourceDir);</span>
+<span class="nc" id="L124">		Vector&lt;ChannelSftp.LsEntry&gt; files = sftpChannel.ls(&quot;.&quot;);</span>
+<span class="nc" id="L125">        List&lt;String&gt; refDoclist = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for(int i=0; i&lt;files.size();i++){</span>
+<span class="nc" id="L127">        	ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) files.get(i);</span>
+<span class="nc bnc" id="L128" title="All 10 branches missed.">            if(entry.getFilename().contains(productNumber+&quot;-&quot;+productVersion) &amp;&amp; (entry.getFilename().endsWith(&quot;.xml&quot;)||entry.getFilename().endsWith(&quot;.zip&quot;)||entry.getFilename().endsWith(&quot;.sig&quot;)|| entry.getFilename().endsWith(&quot;.sha256&quot;))){</span>
+<span class="nc" id="L129">            	refDoclist.add(entry.getFilename());</span>
+            }
+        }
+<span class="nc" id="L132">		return refDoclist;</span>
+	}
+	
+	/**
+	 * @param sftpChannel
+	 * @param downloadDir 
+	 * @param remoteDir 
+	 * @param loadProperties
+	 * @throws Exception
+	 * @throws JSONException
+	 * @throws SignatureValidationException 
+	 * @throws IOException 
+	 * @throws MinioException 
+	 * @throws CustomException 
+	 */
+	public void swgwScanOperation() throws JSONException, SignatureValidationException, IOException, MinioException, CustomException {
+		
+<span class="fc" id="L149">		List&lt;String&gt; productBoxNames = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L150">		logger.info(&quot;Start DA Pckage products Filter&quot;);</span>
+<span class="fc" id="L151">		List&lt;String&gt; productsFilterList = ProductFilter.getproductsFilterList();</span>
+<span class="fc" id="L152">		logger.info(&quot;Products Filter List ::: &quot; +productsFilterList);</span>
+<span class="fc" id="L153">		logger.info(&quot;END DA Pckage products Filter&quot;);</span>
+<span class="fc" id="L154">		String remoteDir = IniConfig.getCascDownloadDir();</span>
+<span class="fc" id="L155">		String downloadDir = IniConfig.getSwgwDownloadDir();</span>
+<span class="fc" id="L156">		String currentDirectory = System</span>
+<span class="fc" id="L157">				.getProperty(Constants.USER_DIR);</span>
+<span class="fc" id="L158">		String logsPath = currentDirectory + &quot;/logs&quot;;</span>
+<span class="fc" id="L159">		String scanInterval = IniConfig.getCascDASscanInterval();</span>
+<span class="fc" id="L160">		long daScanInterval = Long.parseLong(scanInterval);</span>
+		try {
+<span class="fc" id="L162">			List&lt;String&gt; ticketlistFiles = Scanning.ticketXmlListFiles(sftpChannel,remoteDir,daScanInterval);</span>
+<span class="fc" id="L163">			List&lt;String&gt; transferTicketXml = Scanning.transferFiles(sftpChannel,ticketlistFiles,remoteDir,logsPath);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">			if(transferTicketXml.size()!= 0){</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">				for(String ticketfileName : transferTicketXml){</span>
+<span class="nc" id="L166">					File ticketXMlfile = new File(logsPath,ticketfileName);</span>
+<span class="nc" id="L167">					TicketXMLGenerator  ticketXML = PullTicketXMLService.getTicketXMLGenerator(ticketXMlfile);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">					if(ticketXML != null){</span>
+<span class="nc" id="L169">						com.ericsson.swgw.da.swgw.bean.TicketXMLGenerator.Boxes boxes = ticketXML.getBoxes();</span>
+<span class="nc" id="L170">						List&lt;TicketXMLGenerator.Boxes.Box&gt; box = boxes.getBox();</span>
+<span class="nc" id="L171">						List&lt;String&gt; productBoxes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L172">						List&lt;String&gt; successProductBoxes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L173">						List&lt;String&gt; failedProductBoxes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L174">						List&lt;java.io.File&gt; successFiles = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L175">						List&lt;java.io.File&gt; failureFiles = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L176">						List&lt;java.io.File&gt; successTransferedFiles = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L177">						checkDownloadEntireTicket(productBoxNames, productsFilterList, box);</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">						for (com.ericsson.swgw.da.swgw.bean.TicketXMLGenerator.Boxes.Box eachBox : box) {</span>
+<span class="nc" id="L179">							String productNumber = eachBox.getProductNumber();</span>
+<span class="nc bnc" id="L180" title="All 6 branches missed.">							if((ProductFilter.isVerifyProducts() &amp;&amp; !ProductFilter.isDownloadEntireTicket()) &amp;&amp; !productsFilterList.contains(productNumber)){</span>
+<span class="nc" id="L181">								continue;</span>
+							} 
+<span class="nc" id="L183">							String productVersion = eachBox.getVersion();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">							if(StringUtils.isOnlyWhitespaceOrEmpty(productVersion)){</span>
+<span class="nc" id="L185">								productVersion = eachBox.getRState();</span>
+							}
+<span class="nc" id="L187">							productBoxes.add(productNumber+ &quot;-&quot; +productVersion);</span>
+<span class="nc" id="L188">							logger.info(&quot;Begin of processing the product.......&quot;+productNumber+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L189">							String destDir = IniConfig.getSwgwDownloadDir();</span>
+<span class="nc" id="L190">							List&lt;String&gt; boxlistFiles = Scanning.boxlistFiles(sftpChannel,productNumber,productVersion,remoteDir);</span>
+<span class="nc" id="L191">							List&lt;String&gt; transferBoxFilesList = Scanning.transferFiles(sftpChannel,boxlistFiles,remoteDir,destDir);</span>
+<span class="nc" id="L192">							File sigFile = null;</span>
+<span class="nc" id="L193">							File manifestFile = null;</span>
+<span class="nc" id="L194">							File boxFile = null;</span>
+<span class="nc" id="L195">							File nmsDocFile=null;</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">							for(String transferBoxNames : transferBoxFilesList){</span>
+<span class="nc bnc" id="L197" title="All 4 branches missed.">								if(transferBoxNames.contains(productNumber+ &quot;-&quot; +productVersion) &amp;&amp; transferBoxNames.endsWith(&quot;.sig&quot;)){</span>
+<span class="nc" id="L198">									 sigFile = new File(downloadDir,transferBoxNames);</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">								}else if(transferBoxNames.contains(productNumber+ &quot;-&quot; +productVersion)&amp;&amp; transferBoxNames.endsWith(&quot;.sha256&quot;)){</span>
+<span class="nc" id="L200">									 manifestFile = new File(downloadDir,transferBoxNames);</span>
+<span class="nc bnc" id="L201" title="All 4 branches missed.">								}else if(transferBoxNames.contains(productNumber+ &quot;-&quot; +productVersion)&amp;&amp;transferBoxNames.endsWith(&quot;.zip&quot;)){</span>
+<span class="nc" id="L202">									 boxFile = new File(downloadDir,transferBoxNames);</span>
+<span class="nc bnc" id="L203" title="All 4 branches missed.">								}else if(transferBoxNames.contains(productNumber+ &quot;-&quot; +productVersion)&amp;&amp;transferBoxNames.endsWith(&quot;.xml&quot;)){</span>
+<span class="nc" id="L204">									 nmsDocFile = new File(downloadDir,transferBoxNames);</span>
+								}else{
+<span class="nc" id="L206">									logger.error(&quot;-----------files are not found-------------------&quot;);</span>
+								}
+								
+<span class="nc" id="L209">							}</span>
+<span class="nc" id="L210">								boolean isSignsuccess = false;</span>
+<span class="nc bnc" id="L211" title="All 4 branches missed.">								if(null != sigFile  &amp;&amp;  null != manifestFile){</span>
+<span class="nc" id="L212">									isSignsuccess = SignatureValidation.boxSignatureValidation(sigFile.getAbsolutePath(),manifestFile.getAbsolutePath());</span>
+								}else{
+<span class="nc" id="L214">									logger.error(&quot;Either sigFile or manifestFile are null hence cant proceed to further...signature validation&quot;);</span>
+<span class="nc" id="L215">									failureFiles.add(boxFile);</span>
+<span class="nc" id="L216">									failureFiles.add(sigFile);</span>
+<span class="nc" id="L217">									failureFiles.add(manifestFile);</span>
+<span class="nc" id="L218">									failureFiles.add(nmsDocFile);</span>
+<span class="nc" id="L219">									failedProductBoxes.add(productNumber+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L220">									break;</span>
+								}
+								
+<span class="nc bnc" id="L223" title="All 2 branches missed.">								if(isSignsuccess){</span>
+<span class="nc" id="L224">									logger.info(&quot;Signature Validation success for Sign File:: &quot;+sigFile + &quot;&amp;&amp; Manifest File :: &quot;+manifestFile);</span>
+<span class="nc" id="L225">									successFiles.add(sigFile);</span>
+<span class="nc" id="L226">									successFiles.add(manifestFile);</span>
+<span class="nc" id="L227">									String checksumMissMatch = &quot;&quot;;</span>
+<span class="nc" id="L228">									org.codehaus.jettison.json.JSONObject json = new org.codehaus.jettison.json.JSONObject();</span>
+<span class="nc" id="L229">									String ticketxmlSHA256 = eachBox.getSHA256();</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">									if (!StringUtils.isOnlyWhitespaceOrEmpty(ticketxmlSHA256)) {</span>
+<span class="nc" id="L231">										json.put(JSONFIELD_SHA256, ticketxmlSHA256);</span>
+									}
+<span class="nc" id="L233">									String ticketxmlMD5 = eachBox.getMD5();</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">									if (!StringUtils.isOnlyWhitespaceOrEmpty(ticketxmlMD5)) {</span>
+<span class="nc" id="L235">										json.put(JSONFIELD_MD5, ticketxmlMD5);</span>
+									}
+<span class="nc bnc" id="L237" title="All 2 branches missed.">									if(null != boxFile){</span>
+<span class="nc" id="L238">										String sha256 = ChecksumUtils.calculateChecksum(boxFile,</span>
+												Constants.CHECKSUM_SHA256);
+<span class="nc" id="L240">									String md5 = ChecksumUtils.calculateChecksum(boxFile,</span>
+												Constants.CHECKSUM_MD5);
+<span class="nc" id="L242">									checksumMissMatch = ChecksumValidation.validateBoxChecksumWithTicketXmlFile(sha256, md5, json);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">									if (!StringUtils.isOnlyWhitespaceOrEmpty(checksumMissMatch)){</span>
+<span class="nc" id="L244">										logger.error(&quot;Checksum Validation failed for &quot;+ boxFile +&quot;:&quot;+checksumMissMatch );</span>
+<span class="nc" id="L245">										failureFiles.add(boxFile);</span>
+<span class="nc" id="L246">										failureFiles.add(sigFile);</span>
+<span class="nc" id="L247">										failureFiles.add(manifestFile);</span>
+<span class="nc" id="L248">										failureFiles.add(nmsDocFile);</span>
+<span class="nc" id="L249">										failedProductBoxes.add(productBoxes+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L250">										break;</span>
+										}else{
+<span class="nc" id="L252">											logger.info(&quot;Checksum Validation Success for &quot;+boxFile);</span>
+<span class="nc" id="L253">											successProductBoxes.add(productNumber+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L254">											successFiles.add(boxFile);</span>
+<span class="nc" id="L255">											successFiles.add(sigFile);</span>
+<span class="nc" id="L256">											successFiles.add(manifestFile);</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">											if(null != nmsDocFile){</span>
+<span class="nc" id="L258">												successFiles.add(nmsDocFile);</span>
+											}else{
+<span class="nc" id="L260">												failureFiles.add(nmsDocFile);</span>
+											}
+<span class="nc" id="L262">											logger.info(&quot;SMO/NMS  Files Completed&quot;);</span>
+										}
+<span class="nc" id="L264">									}else{</span>
+<span class="nc" id="L265">										failureFiles.add(sigFile);</span>
+<span class="nc" id="L266">										failureFiles.add(manifestFile);</span>
+<span class="nc" id="L267">										failedProductBoxes.add(productBoxes+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L268">										logger.error(&quot;The transfer of product failed for&quot;+productBoxes+ &quot;-&quot;+productVersion);</span>
+										}
+<span class="nc" id="L270">									}else{</span>
+<span class="nc" id="L271">										logger.error(&quot;Signature Validation Failed for Sign File:: &quot;+sigFile + &quot;&amp;&amp; Manifest File :: &quot;+manifestFile);</span>
+<span class="nc" id="L272">										failureFiles.add(sigFile);</span>
+<span class="nc" id="L273">										failureFiles.add(manifestFile);</span>
+<span class="nc" id="L274">										failureFiles.add(boxFile);</span>
+<span class="nc" id="L275">										failureFiles.add(nmsDocFile);</span>
+<span class="nc" id="L276">										failedProductBoxes.add(productNumber+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L277">										break;</span>
+									}
+<span class="nc" id="L279">								logger.info(&quot;End of processing the product.......&quot;+productNumber+ &quot;-&quot;+productVersion);</span>
+<span class="nc" id="L280">							}</span>
+			
+<span class="nc bnc" id="L282" title="All 6 branches missed.">						if(productBoxes.size() &gt; 0 &amp;&amp; (productBoxes.size() == successProductBoxes.size())&amp;&amp; failureFiles.size()== 0){</span>
+<span class="nc" id="L283">							logger.info(&quot;All Box Validations are success&quot;);</span>
+<span class="nc" id="L284">							String strTicketFileName= ticketXML.getTicketID() + Constants.XML_EXT;</span>
+<span class="nc" id="L285">							  File transferTicketManifestFile = transferTicketManifestFile(remoteDir, downloadDir, ticketXML,</span>
+									strTicketFileName);
+<span class="nc" id="L287">							boolean isMoved = FileUtils.moveFileToDestination(logsPath,downloadDir,ticketXMlfile.getName(),strTicketFileName);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">							if(isMoved) {</span>
+<span class="nc" id="L289">								successFiles.add(transferTicketManifestFile);</span>
+<span class="nc" id="L290">								successFiles.add(new File(downloadDir,strTicketFileName));</span>
+<span class="nc" id="L291">								FileUtils.deleteFile(logsPath,ticketXMlfile.getName());</span>
+							} else {
+<span class="nc" id="L293">								logger.error(&quot;unable to move file from source to Destination ::&quot; + logsPath,downloadDir,ticketXMlfile.getName());</span>
+							}
+<span class="nc bnc" id="L295" title="All 2 branches missed.">							if(Boolean.TRUE.equals(FileTransfer.isDownloadOnly())){</span>
+<span class="nc" id="L296">								logger.info(&quot;Begin of file transfer.........&quot;);</span>
+<span class="nc" id="L297">								successTransferedFiles = FileTransfer.transferFiles(successFiles);</span>
+<span class="nc" id="L298">                                logger.info(&quot;End of file transfer.........&quot;);</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">                                for(File transferedFile : successTransferedFiles ){</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">									if (transferedFile.exists()){</span>
+<span class="nc" id="L301">										transferedFile.delete();</span>
+									}
+<span class="nc" id="L303">									logger.info(&quot;Cleaning the local DA Store after sucessfull File Transfer&quot;);</span>
+<span class="nc" id="L304">								}</span>
+                            }
+							
+<span class="nc bnc" id="L307" title="All 2 branches missed.">						} else if (!ProductFilter.isVerifyProducts()){</span>
+
+							//XML file delete
+<span class="nc" id="L310">							FileUtils.deleteFile(logsPath,ticketXMlfile.getName());</span>
+							
+							//cleaning success Boxes with Sig &amp; Manifest Files and SMO &amp; NMO Files if any Box Checksum validation fails 
+<span class="nc bnc" id="L313" title="All 2 branches missed.">								for(File successList : successFiles ){</span>
+<span class="nc bnc" id="L314" title="All 4 branches missed.">									if (null != successList &amp;&amp; successList.exists()){</span>
+<span class="nc" id="L315">										logger.info(&quot;successFiles::::&quot;+successList.getName());</span>
+<span class="nc" id="L316">										successList.delete();</span>
+									}
+<span class="nc" id="L318">								}</span>
+								
+							//cleaning Sig &amp; Manifest Files and SMO &amp; NMO Files
+<span class="nc bnc" id="L321" title="All 2 branches missed.">								for(File failureList : failureFiles ){</span>
+<span class="nc bnc" id="L322" title="All 4 branches missed.">									if (null != failureList &amp;&amp; failureList.exists()){</span>
+<span class="nc" id="L323">										logger.info(&quot;failureFiles::::&quot;+failureList.getName());</span>
+<span class="nc" id="L324">										failureList.delete();</span>
+									}
+<span class="nc" id="L326">								}</span>
+							
+						}else {
+							//XML file delete
+<span class="nc" id="L330">							FileUtils.deleteFile(logsPath,ticketXMlfile.getName());</span>
+							
+							//cleaning success Boxes with Sig &amp; Manifest Files and SMO &amp; NMO Files if any Box Checksum validation fails 
+<span class="nc bnc" id="L333" title="All 2 branches missed.">							for(File successList : successFiles ){</span>
+<span class="nc bnc" id="L334" title="All 4 branches missed.">								if (null != successList &amp;&amp; successList.exists()){</span>
+<span class="nc" id="L335">									logger.info(&quot;successFiles::::&quot;+successList.getName());</span>
+<span class="nc" id="L336">									successList.delete();</span>
+								}
+<span class="nc" id="L338">							}</span>
+							
+						//cleaning Sig &amp; Manifest Files and SMO &amp; NMO Files
+<span class="nc bnc" id="L341" title="All 2 branches missed.">							for(File failureList : failureFiles ){</span>
+<span class="nc bnc" id="L342" title="All 4 branches missed.">								if (null != failureList &amp;&amp; failureList.exists()){</span>
+<span class="nc" id="L343">									logger.info(&quot;failureFiles::::&quot;+failureList.getName());</span>
+<span class="nc" id="L344">									failureList.delete();</span>
+								}
+<span class="nc" id="L346">							}</span>
+						}
+						
+<span class="nc" id="L349">					}else {</span>
+<span class="nc" id="L350">						logger.error(&quot;Ticket XML Not found ::&quot; + logsPath + Constants.BACK_SLASH + ticketXMlfile.getName() );</span>
+<span class="nc" id="L351">						FileUtils.deleteFile(logsPath,ticketXMlfile.getName());</span>
+					}	
+<span class="nc" id="L353">				}</span>
+			}else{
+<span class="fc" id="L355">				logger.info(&quot;There are no new files arrived into the directory&quot;);</span>
+			}
+<span class="fc" id="L357">			logger.info(&quot;......................./End of DA Run&quot;);</span>
+<span class="nc" id="L358">		} catch (SftpException | JSchException e) {</span>
+<span class="nc" id="L359">			e.printStackTrace();</span>
+<span class="fc" id="L360">		}</span>
+<span class="fc" id="L361">	}</span>
+
+	@SuppressWarnings(&quot;unused&quot;)
+	private void checkDownloadEntireTicket(List&lt;String&gt; productBoxNames,
+			List&lt;String&gt; productsFilterList,
+			List&lt;TicketXMLGenerator.Boxes.Box&gt; box) throws CustomException {
+<span class="nc bnc" id="L367" title="All 2 branches missed.">		for (com.ericsson.swgw.da.swgw.bean.TicketXMLGenerator.Boxes.Box eachBox : box) {</span>
+<span class="nc" id="L368">			String productNumber = eachBox.getProductNumber();</span>
+<span class="nc" id="L369">			productBoxNames.add(productNumber);</span>
+<span class="nc" id="L370">		}</span>
+<span class="nc" id="L371">		Boolean isDownloadEntireTicket = false;</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">		if(Boolean.TRUE.equals(ProductFilter.isDownloadEntireTicket())){</span>
+<span class="nc" id="L373">			List&lt;String&gt; collectProducts = productsFilterList.stream()</span>
+<span class="nc" id="L374">		       .filter(productBoxNames::contains)</span>
+<span class="nc" id="L375">		       .collect(Collectors</span>
+<span class="nc" id="L376">		                    .toList());</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">			if(collectProducts.isEmpty()){</span>
+<span class="nc" id="L378">				throw new CustomException(&quot;Download Entire Ticket is enabled and Product Filter didn't matched&quot; );</span>
+			}
+		}
+<span class="nc" id="L381">	}</span>
+
+	private File transferTicketManifestFile(String remoteDir, String downloadDir,
+			TicketXMLGenerator ticketXML, String strTicketFileName)
+			throws SftpException {
+<span class="nc" id="L386">		String destFileName=&quot;&quot;;</span>
+<span class="nc" id="L387">		sftpChannel.cd(remoteDir);</span>
+		  @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L389">		Vector&lt;ChannelSftp.LsEntry&gt; files = sftpChannel.ls(&quot;.&quot;);</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">		  for(int i=0; i&lt;files.size();i++){</span>
+<span class="nc" id="L391">			  ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) files.get(i);</span>
+<span class="nc bnc" id="L392" title="All 4 branches missed.">			  if(entry.getFilename().startsWith(ticketXML.getTicketID()) &amp;&amp; entry.getFilename().endsWith(Constants.MANIFEST_SHA256_EXTN)){</span>
+<span class="nc" id="L393">				  String remoteTktXmlManifestFileName = entry.getFilename();</span>
+<span class="nc" id="L394">				  StringBuilder sbDestFile = new StringBuilder();</span>
+<span class="nc" id="L395">				  sbDestFile.append(downloadDir);</span>
+<span class="nc" id="L396">				  sbDestFile.append(Constants.BACK_SLASH);</span>
+<span class="nc" id="L397">				  sbDestFile.append(strTicketFileName);</span>
+<span class="nc" id="L398">				  sbDestFile.append(Constants.MANIFEST_SHA256_EXTN);</span>
+<span class="nc" id="L399">				  destFileName=sbDestFile.toString();</span>
+<span class="nc" id="L400">				  sftpChannel.get(remoteTktXmlManifestFileName, destFileName);</span>
+<span class="nc" id="L401">				  logger.info(&quot;Transfer of Ticket-Xml Manifest File......&quot;+destFileName);</span>
+			  }
+		}
+<span class="nc" id="L404">		return new File(destFileName);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

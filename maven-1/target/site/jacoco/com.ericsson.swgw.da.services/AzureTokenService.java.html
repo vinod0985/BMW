@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AzureTokenService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.services</a> &gt; <span class="el_source">AzureTokenService.java</span></div><h1>AzureTokenService.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.services;
+
+/*###################################################################################
+ #  @Name           :   AzureTokenService.java
+ #
+ #  @Created        :   Sept Drop 2022
+ #
+ #  @Description    :   Azure Token geneeration service
+ #
+ #  @Programmer     :   Eswar D
+ #
+ #  @Organization   :   HCL
+ #
+ #  @Release        :   MR2209
+ #
+ #  @History        :
+ #      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+ #      ZDARESW(Eswar)      21-Sept-2022              Created utils method to authenticate client and secret key
+ ######################################################################################*/
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
+
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.codehaus.jettison.json.JSONException;
+
+import com.bettercloud.vault.VaultException;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.database.DBUtils;
+import com.ericsson.swgw.da.integrations.kms_vault_hvac_integration;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.utils.HttpClientUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+public class AzureTokenService {
+	
+<span class="fc" id="L45">	private static  Logger logger = LogManager.getLogger(AzureTokenService.class);</span>
+
+<span class="nc" id="L47">	private AzureTokenService() {</span>
+<span class="nc" id="L48">		throw new IllegalStateException(&quot;Service class&quot;);</span>
+	}
+	
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public static String getswgwAuthenticate() throws IOException, JSONException {
+<span class="fc" id="L54">		String bearerToken = Constants.EMPTY;</span>
+<span class="fc" id="L55">		IniConfig iniConfig= new IniConfig();</span>
+<span class="fc" id="L56">		String baseUrl = IniConfig.getSwgwBaseURL();</span>
+<span class="fc" id="L57">		String clientKey = IniConfig.getSwgwClientKey();</span>
+<span class="fc" id="L58">		String secretKey = IniConfig.getSwgwSecretKey();</span>
+		
+		// Read clientKey &amp; secretKey from KMS Vault
+<span class="pc bpc" id="L61" title="2 of 4 branches missed.">		if(StringUtils.isOnlyWhitespaceOrEmpty(clientKey)|| StringUtils.isOnlyWhitespaceOrEmpty(secretKey)){</span>
+			try {
+<span class="nc" id="L63">				clientKey = kms_vault_hvac_integration.getClientKey();</span>
+<span class="nc" id="L64">				secretKey =  kms_vault_hvac_integration.getSecretKey();</span>
+<span class="nc" id="L65">			} catch (VaultException e) {</span>
+<span class="nc" id="L66">				logger.error(&quot;clientKey,secretKey are not found in kms vault&quot;);</span>
+<span class="nc" id="L67">			}</span>
+		}
+		
+		// Read clientKey &amp; secretKey from Database
+<span class="pc bpc" id="L71" title="2 of 4 branches missed.">		if(StringUtils.isOnlyWhitespaceOrEmpty(clientKey)|| StringUtils.isOnlyWhitespaceOrEmpty(secretKey)){</span>
+<span class="nc" id="L72">			String wEuft = IniConfig.getSwgwEUFT();</span>
+			Map&lt;String, String&gt; configureSecrects;
+			try {
+<span class="nc" id="L75">				configureSecrects = DBUtils.getSecrects(wEuft);</span>
+<span class="nc" id="L76">				clientKey = configureSecrects.get(Constants.CLIENT_KEY);</span>
+<span class="nc" id="L77">				secretKey = configureSecrects.get(Constants.SECRET_KEY);</span>
+<span class="nc" id="L78">			} catch (SQLException e) {</span>
+<span class="nc" id="L79">				logger.error(&quot;clientKey,secretKey are not found in Data Base&quot;);</span>
+<span class="nc" id="L80">			}</span>
+		}
+		
+<span class="pc bpc" id="L83" title="3 of 6 branches missed.">		if(StringUtils.isOnlyWhitespaceOrEmpty(baseUrl)|| StringUtils.isOnlyWhitespaceOrEmpty(clientKey)|| StringUtils.isOnlyWhitespaceOrEmpty(secretKey)){</span>
+<span class="nc" id="L84">			logger.debug(&quot;Base URl :: &quot;+baseUrl);</span>
+<span class="nc" id="L85">			logger.error(&quot;Either values of baseUrl,clientKey,secretKey are empty,Please update and retry the operation&quot;);</span>
+<span class="nc" id="L86">			return bearerToken;</span>
+		}
+		
+<span class="fc" id="L89">		bearerToken = executeHttpPost(baseUrl, clientKey,secretKey);</span>
+		
+<span class="fc" id="L91">		return bearerToken;</span>
+	}
+
+	/**
+	 * @param baseUrl
+	 * @param clientKey
+	 * @param secretKey
+	 * @return
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	private static String executeHttpPost(String baseUrl,
+			String clientKey, String secretKey) throws IOException,
+			JSONException {
+<span class="fc" id="L105">		String bearerToken = &quot;&quot;;</span>
+<span class="fc" id="L106">		CloseableHttpClient httpClient = null;</span>
+<span class="fc" id="L107">		CloseableHttpResponse response = null;</span>
+		try {
+<span class="fc" id="L109">			String content = String.format(Constants.AUTH_CONTENT, clientKey);</span>
+<span class="fc" id="L110">			httpClient = HttpClientUtils.createDefaultHttpClient();</span>
+<span class="fc" id="L111">			HttpPost createPost = HttpClientUtils.createPost(baseUrl, content);</span>
+<span class="fc" id="L112">			createPost.setHeader(Constants.CONTENT_TYPE,</span>
+					Constants.APPLICATION_URL_ENCODED);
+
+<span class="fc" id="L115">			String auth = clientKey + Constants.COLON + secretKey;</span>
+<span class="fc" id="L116">			String basicAuth = Constants.BASIC_AUTH;</span>
+<span class="fc" id="L117">			String basicAuthHeader = String.format(basicAuth,</span>
+<span class="fc" id="L118">					new String(Base64.encodeBase64(auth.getBytes())));</span>
+
+<span class="fc" id="L120">			createPost.setHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader);</span>
+
+<span class="fc" id="L122">			response = httpClient.execute(createPost);</span>
+
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">			if (HttpClientUtils.isStatusCodeOk(response.getStatusLine()</span>
+<span class="fc" id="L125">					.getStatusCode())) {</span>
+<span class="fc" id="L126">				String responseString = EntityUtils.toString(response</span>
+<span class="fc" id="L127">						.getEntity());</span>
+<span class="fc" id="L128">				logger.debug(&quot;Status Code is Ok :::::&quot; + responseString);</span>
+<span class="fc" id="L129">				org.codehaus.jettison.json.JSONObject jsonResponse = new org.codehaus.jettison.json.JSONObject(</span>
+						responseString);
+<span class="fc" id="L131">				bearerToken = (String) jsonResponse.get(Constants.ACCESS_TOKEN);</span>
+<span class="fc" id="L132">			} else {</span>
+<span class="nc" id="L133">				String responseString = EntityUtils.toString(response</span>
+<span class="nc" id="L134">						.getEntity());</span>
+<span class="nc" id="L135">				logger.error(&quot;Status Code is NOT Ok::&quot; + responseString);</span>
+			}
+		} 
+<span class="nc" id="L138">		catch (IOException  ioEx) {</span>
+<span class="nc" id="L139">			logger.error(&quot;Failed To Generate Bearer Token..&quot;);</span>
+<span class="nc" id="L140">			logger.error(ioEx.getMessage());</span>
+<span class="nc" id="L141">			throw new IOException(&quot;Failed To Generate Bearer Token&quot;);</span>
+		} 
+<span class="nc" id="L143">		catch (JSONException e) {</span>
+<span class="nc" id="L144">			e.printStackTrace();</span>
+<span class="nc" id="L145">			throw new JSONException(e.getMessage());</span>
+		} finally {
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">			if (null != httpClient) {</span>
+<span class="fc" id="L148">				httpClient.close();</span>
+			}
+			
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">			if (null != response) {</span>
+<span class="fc" id="L152">				response.close();</span>
+			}
+		}
+<span class="fc" id="L155">		return bearerToken;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

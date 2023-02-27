@@ -1,0 +1,138 @@
+modelVersion: 2.0
+
+docker-images:
+  - adp-release-auto: armdocker.rnd.ericsson.se/proj-adp-cicd-drop/bob-adp-release-auto:latest
+
+env:
+  - PWD
+  - DEFAULT (default=84)
+  - BOB_TEST_ENV_VAR (default=unset)
+  - RELEASE (default=false)
+  - FOOBAR (default=)
+  - USER
+  - GERRIT_USER (default=${env.USER})
+  - HUDSON_URL (default=https://fem9s10-eiffel007.eiffel.gic.ericsson.se:8443/jenkins)
+  - JENKINS_USER (default= ${env.USER})
+  - JENKINS_APIKEY
+  - BUILD_NUMBER
+  - JOB_NAME
+
+# List of constants
+properties:
+  - image-name: eric-swgwda
+  - image-registry: armdocker.rnd.ericsson.se
+  - image-secret: armdocker
+  - image-version: 0.1.0-$BUILD_NUMBER
+  - image-dev-repopath:  proj-eric-swgwda-dev
+  - image-full-name-dev: ${image-registry}/${image-dev-repopath}/${image-name}
+  
+  - arg_jar: eric-swgwda-0.1.0-1.jar
+  
+  # Helm Chart name must follow the pattern: eric-[a-z0-9]{1,5}-[a-z0-9-]{1,30}
+  - helm-chart-name: eric-swgwda
+  - helm-chart-repo-server: https://arm.sero.gic.ericsson.se/artifactory
+  - helm-chart-dev-repopath: proj-eric-swgwda-dev-helm
+  - helm-chart-drop-repo: ${helm-chart-repo-server}/${helm-chart-dev-repopath}
+  
+  
+
+var:
+  - version
+  - commithash
+  - git_root
+  - git_tag
+  - image_name
+  - image_number
+  - rstate
+  - semver
+  - branch
+  - image-repopath-dev
+  - image-full-name-dev
+  - helm-chart-repo-dev
+
+rules:
+  conditions:
+    - task: is-docker-available
+      cmd: test -e /var/run/docker.sock
+    - task: disable
+      cmd: exit 1
+
+  clean:
+    - task: remove
+      docker-image: adp-release-auto
+      cmd: rm -rf .bob
+    - task: clean
+      cmd:    
+        - chmod 775 ./mvnw
+        - ./mvnw clean
+
+  init:
+    - description: Rule to be called first to initialize environment
+    - task: version
+      docker-image: adp-release-auto
+      cmd:
+        - version-handler generate
+          --is-release true
+          --output version
+          --git-repo-path .
+        - sed -e 's@-.*$@@' .bob/var.version > .bob/var.semver
+    - task: image_name
+      docker-image: adp-release-auto
+      cmd: yq -r '.images.mainImage.productName' charts/${helm-chart-name}/eric-product-info.yaml > .bob/var.image_name
+    - task: image_number
+      docker-image: adp-release-auto
+      cmd: yq -r '.images.mainImage.productNumber' charts/${helm-chart-name}/eric-product-info.yaml > .bob/var.image_number
+    - task: git_tag
+      docker-image: adp-release-auto
+      cmd: "cat .bob/var.version | tr '-' '+' > .bob/var.git_tag"
+    - task: commit
+      description: Get current commithash
+      docker-image: adp-release-auto
+      cmd: git rev-parse --short HEAD > .bob/var.commithash
+    - task: git_root
+      description: Get the path to git root folder
+      docker-image: adp-release-auto
+      cmd: git rev-parse --show-toplevel > .bob/var.git_root
+    - task: branch
+      cmd: git rev-parse --abbrev-ref HEAD > .bob/var.branch
+    - task: image-repopath-internal
+      cmd: echo "${image-dev-repopath}" > .bob/var.image-repopath-dev
+    - task: image-full-name-internal
+      cmd: echo "${image-registry}/${image-dev-repopath}/${image-name}" > .bob/var.image-full-name-dev
+    - task: helm-chart-repo-internal
+      cmd: echo "${helm-chart-repo-server}/${helm-chart-dev-repopath}" > .bob/var.helm-chart-repo-dev
+      
+  generate:
+    - task: build
+      description: Generate & build latest code
+      cmd:
+        - cd ${var.git_root}
+        - git reset --hard
+        - git pull
+        - git checkout ${var.branch}
+        - git pull
+        - chmod 775 ./mvnw
+        - ./mvnw install
+    - task: move_jar_to_dockerfile-path
+      description: After build move jar into Dockerfile path
+      cmd:
+        - cd ${var.git_root}
+        - cd ${var.git_root}/docker/
+        - cp -rf ${var.git_root}/target/${arg_jar} .
+
+  image:
+    - task: docker-build
+      condition: conditions:is-docker-available
+      cmd: docker build ${env.PWD}
+        --file Dockerfile
+        --tag ${image-full-name-dev}:${image-version}
+        --build-arg BASE_IMAGE_NUMBER="CXC2012032"
+        --build-arg BASE_IMAGE_VERSION="5.7.0-34"
+        --build-arg IMAGE_NAME="${var.image_name}"
+        --build-arg IMAGE_NUMBER="${var.image_number}"
+        --build-arg BUILD_DATE=`date -u +%FT%TZ`
+        --build-arg COMMIT_HASH=${var.commithash}
+        --build-arg RSTATE=${var.rstate}
+        --build-arg VERSION=${var.version}
+    - task: image-push-dev-internal
+      cmd: docker push ${image-full-name-dev}:${image-version}

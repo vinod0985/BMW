@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: com.ericsson.swgw.da.controller.TestControllerApplication
+-------------------------------------------------------------------------------
+Tests run: 11, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 66.326 s <<< FAILURE! - in com.ericsson.swgw.da.controller.TestControllerApplication
+createProduct_test  Time elapsed: 0.027 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<400>
+	at com.ericsson.swgw.da.controller.TestControllerApplication.createProduct_test(TestControllerApplication.java:297)
+

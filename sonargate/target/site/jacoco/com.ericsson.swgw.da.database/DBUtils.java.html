@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DBUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.database</a> &gt; <span class="el_source">DBUtils.java</span></div><h1>DBUtils.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.database;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+//import org.apache.commons.dbcp2.BasicDataSource;
+
+
+import com.ericsson.swgw.da.constants.DBConstants;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+<span class="nc" id="L17">public class DBUtils {</span>
+
+	/*public static void initDataBase(ClassLoader classLoader, String sqlResource,
+			String driver, BasicDataSource dataSource) throws Exception {
+		 Connection c = null;
+		 
+		 try {
+			 Class.forName(driver);
+	    	 c = dataSource.getConnection();
+	         c.setAutoCommit(false);
+	         
+	       //Creating a table in Derby database
+	         String query = getSWGWDataTableSpceQuery();
+	         
+	       //Creating the Statement object
+		     Statement stmt = c.createStatement();
+	         stmt.execute(query);		      
+	         System.out.println(&quot;Table created&quot;);
+	         
+		        DBUtils dbUtils = new DBUtils();
+		        dbUtils.updateConfig(123456,&quot;Test&quot;,&quot;Test&quot;);
+		 }catch (Exception var16) {
+	         if (c != null) {
+	             try {
+	                c.rollback();
+	             } catch (SQLException var15) {
+	                System.out.println(&quot;Unable to rollback ...&quot;+ var15);
+	             }
+	          }
+	          throw var16;
+	       } finally {	          
+	    	   if (c != null) {
+	  	         try {
+	  	            c.close();
+	  	         } catch (SQLException var2) {
+	  	        	 var2.printStackTrace();
+	  	         }
+	  	      }
+	       }
+		
+	}*/
+	
+	/**
+	 * @param secret_key 
+	 * @param client_key 
+	 * 
+	 */
+	/*public  String updateConfig(int euft,String clientKey, String secretKey) {
+		String sMessage = &quot;&quot;;
+		Connection c = null;
+		try {
+			
+			c = DBService.getDBConnection();
+			
+			//Inserting data
+	         String query = insertingdataQuery(euft, clientKey, secretKey);
+	         System.out.println(&quot;query inserted:::::&quot;+query);
+	         
+	         //Creating the Statement object
+		     Statement stmt = c.createStatement();
+	         Boolean b= stmt.execute(query);		      
+	         System.out.println(&quot;Values inserted&quot;+b);
+	         
+		} catch (Exception var16) {
+			var16.printStackTrace();
+			sMessage = var16.getMessage();
+	         if (c != null) {
+	             try {
+	                c.rollback();
+	             } catch (SQLException var15) {
+	            	 var15.printStackTrace();
+	            	 sMessage = var15.getMessage();
+	            	 var15.printStackTrace();
+	                System.out.println(&quot;Unable to rollback ...&quot;+ var15);
+	             }
+	          }
+	          	       
+		} finally {	          
+    	   if (c != null) {
+	  	         try {
+	  	            c.close();
+	  	         } catch (SQLException var2) {
+	  	        	 sMessage = var2.getMessage();
+	  	        	 var2.printStackTrace();
+	  	         }
+	  	      }
+		}		
+		return sMessage;
+	}
+	
+*//*
+	public static Map&lt;String, String&gt; getConfig(int euft) {
+		Map&lt;String,String&gt; configMap = new HashMap&lt;String,String&gt;();
+		Connection c = null;
+		try{
+			Class.forName(DBConstants.DRIVER);
+			c = DBService.getDBConnection();
+			
+			//GET data
+	         String query = getConfigdataQuery(euft);
+	         
+	         //Creating the Statement object
+		     Statement stmt = c.createStatement();
+
+
+		     ResultSet rs = stmt.executeQuery(query);
+		      System.out.println(&quot;Contents of the table SWGWData table:&quot;);
+			while (rs.next()) {
+				System.out.print(&quot;Id: &quot; + rs.getInt(&quot;Id&quot;) + &quot;, &quot;);
+				System.out.print(&quot;ClientId: &quot; + rs.getString(&quot;ClientId&quot;) + &quot;, &quot;);
+				System.out.print(&quot;SecretKey: &quot; + rs.getString(&quot;SecretKey&quot;)+ &quot;, &quot;);
+				System.out.println();
+				
+				configMap.put(Constants.CLIENT_KEY, rs.getString(Constants.CLIENT_KEY));
+				configMap.put(Constants.SECRET_KEY, rs.getString(Constants.SECRET_KEY));
+			}
+	         
+	         System.out.println(&quot;Contents of the table SWGWData table:&quot;);
+			
+		} catch (Exception var16) {
+			var16.printStackTrace();
+			configMap.put(Constants.MESSAGE, var16.getMessage());
+			if (c != null) {
+				try {
+					c.rollback();
+				} catch (SQLException var15) {
+					configMap.put(Constants.MESSAGE, var15.getMessage());
+					var15.printStackTrace();
+				}
+			}
+		} finally {	          
+			if (c != null) {
+				try {
+					c.close();
+				} catch (SQLException var2) {
+					configMap.put(Constants.MESSAGE, var2.getMessage());
+					var2.printStackTrace();
+				}
+			}
+		}	
+		
+		
+		return configMap;
+	}*/
+	
+	static String insertingdataQuery(int euft, String clientKey, String secretKey) {
+<span class="nc" id="L163">		StringBuilder insertingQuery= new StringBuilder();</span>
+<span class="nc" id="L164">		insertingQuery.append(&quot;INSERT INTO SWGWDATA &quot;);</span>
+<span class="nc" id="L165">		insertingQuery.append(&quot;( &quot;);</span>
+<span class="nc" id="L166">		insertingQuery.append(Constants.Euft);</span>
+<span class="nc" id="L167">		insertingQuery.append(&quot;, &quot;);</span>
+<span class="nc" id="L168">		insertingQuery.append(Constants.CLIENT_KEY);</span>
+<span class="nc" id="L169">		insertingQuery.append(&quot;, &quot;);</span>
+<span class="nc" id="L170">		insertingQuery.append(Constants.SECRET_KEY);</span>
+<span class="nc" id="L171">		insertingQuery.append(&quot; ) VALUES  &quot;);</span>
+<span class="nc" id="L172">		insertingQuery.append(&quot;(&quot;);</span>
+<span class="nc" id="L173">		insertingQuery.append(euft);</span>
+<span class="nc" id="L174">		insertingQuery.append(&quot;, '&quot;);</span>
+<span class="nc" id="L175">		insertingQuery.append(clientKey);</span>
+<span class="nc" id="L176">		insertingQuery.append(&quot;', '&quot;);</span>
+<span class="nc" id="L177">		insertingQuery.append(secretKey);</span>
+<span class="nc" id="L178">		insertingQuery.append(&quot;')&quot;);</span>
+<span class="nc" id="L179">		String query = insertingQuery.toString();</span>
+<span class="nc" id="L180">		return query;</span>
+	}
+
+	/**
+	 * 
+	 */
+	static String getSWGWDataTableSpceQuery() {
+<span class="nc" id="L187">		StringBuilder tableQuery= new StringBuilder();</span>
+<span class="nc" id="L188">		tableQuery.append(&quot;CREATE TABLE SWGWDATA ( &quot;);</span>
+<span class="nc" id="L189">		tableQuery.append(&quot;&quot;);</span>
+<span class="nc" id="L190">		tableQuery.append(Constants.Euft);</span>
+<span class="nc" id="L191">		tableQuery.append(&quot; INT NOT NULL ,&quot;);</span>
+<span class="nc" id="L192">		tableQuery.append(&quot; &quot;);</span>
+<span class="nc" id="L193">		tableQuery.append(Constants.CLIENT_KEY);</span>
+<span class="nc" id="L194">		tableQuery.append(&quot; VARCHAR(255) NOT NULL , &quot;);</span>
+<span class="nc" id="L195">		tableQuery.append(&quot; &quot;);</span>
+<span class="nc" id="L196">		tableQuery.append(Constants.SECRET_KEY);</span>
+<span class="nc" id="L197">		tableQuery.append(&quot; VARCHAR(255) NOT NULL , &quot;);</span>
+<span class="nc" id="L198">		tableQuery.append(&quot;PRIMARY KEY (Euft))&quot;);</span>
+<span class="nc" id="L199">		String query = tableQuery.toString();</span>
+<span class="nc" id="L200">		return query;</span>
+	}
+	
+	/**
+	 * 
+	 */
+
+	static String getConfigdataQuery(int euft) {
+<span class="fc" id="L208">		StringBuilder configQuery= new StringBuilder();</span>
+<span class="fc" id="L209">		configQuery.append(&quot;Select * FROM SWGWDATA &quot;);</span>
+<span class="fc" id="L210">		configQuery.append(&quot;WHERE &quot;);</span>
+<span class="fc" id="L211">		configQuery.append(Constants.Euft);</span>
+<span class="fc" id="L212">		configQuery.append(&quot;=&quot;);</span>
+<span class="fc" id="L213">		configQuery.append(euft);</span>
+<span class="fc" id="L214">		configQuery.append(&quot;&quot;);</span>
+<span class="fc" id="L215">		String query= configQuery.toString();</span>
+<span class="fc" id="L216">		return query;</span>
+	}
+	
+	/**
+	 * 
+	 */
+
+	 static boolean tableExist(Connection conn, String tableName) throws SQLException {
+<span class="fc" id="L224">		boolean tExists = false;</span>
+<span class="fc" id="L225">	    try (ResultSet res = conn.getMetaData().getTables(null, null, tableName, new String[] {&quot;TABLE&quot;})) {</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">	        while (res.next()) { </span>
+<span class="fc" id="L227">	            String tName = res.getString(&quot;TABLE_NAME&quot;);</span>
+<span class="pc bpc" id="L228" title="2 of 4 branches missed.">	            if (tName != null &amp;&amp; tName.equals(tableName)) {</span>
+<span class="fc" id="L229">	                tExists = true;</span>
+<span class="fc" id="L230">	                break;</span>
+	            }
+<span class="nc" id="L232">	        }</span>
+	    }
+<span class="fc" id="L234">	    return tExists;</span>
+		
+	}
+	
+	/**
+	 * 
+	 */
+
+	 static String updatedataQuery(int euft, String clientKey,
+			String secretKey) {
+<span class="fc" id="L244">		 StringBuilder updateQuery= new StringBuilder();</span>
+<span class="fc" id="L245">		 updateQuery.append(&quot;UPDATE SWGWDATA &quot;);</span>
+<span class="fc" id="L246">		 updateQuery.append(&quot;SET &quot;);</span>
+<span class="fc" id="L247">		 updateQuery.append(Constants.CLIENT_KEY);</span>
+<span class="fc" id="L248">		 updateQuery.append(&quot;='&quot;);</span>
+<span class="fc" id="L249">		 updateQuery.append(clientKey);</span>
+<span class="fc" id="L250">		 updateQuery.append(&quot;'&quot;);</span>
+<span class="fc" id="L251">		 updateQuery.append(&quot;,&quot;);</span>
+<span class="fc" id="L252">		 updateQuery.append(Constants.SECRET_KEY);</span>
+<span class="fc" id="L253">		 updateQuery.append(&quot;='&quot;);</span>
+<span class="fc" id="L254">		 updateQuery.append(secretKey);</span>
+<span class="fc" id="L255">		 updateQuery.append(&quot;'&quot;);</span>
+<span class="fc" id="L256">		 updateQuery.append(&quot;WHERE &quot;);</span>
+<span class="fc" id="L257">		 updateQuery.append(Constants.Euft);</span>
+<span class="fc" id="L258">		 updateQuery.append(&quot;=&quot;);</span>
+<span class="fc" id="L259">		 updateQuery.append(euft);</span>
+<span class="fc" id="L260">		 updateQuery.append(&quot;&quot;);</span>
+<span class="fc" id="L261">		 String query = updateQuery.toString();</span>
+<span class="fc" id="L262">		return query;</span>
+
+	}
+
+	/**
+	 * @param euft
+	 * @return
+	 * @throws SQLException
+	 */
+	@SuppressWarnings(&quot;rawtypes&quot;)
+	public static Map getSecrects(String euft) throws SQLException {
+<span class="nc" id="L273">		Map&lt;String, String&gt; configMap = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(euft)) {</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">			if (euft.matches(&quot;[0-9]+&quot;)) {</span>
+<span class="nc" id="L276">				configMap = DerbyDBService.getData(Integer.parseInt(euft));</span>
+			}
+		}
+<span class="nc" id="L279">		return configMap;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

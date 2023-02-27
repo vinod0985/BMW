@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Ticket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.xml.parser</a> &gt; <span class="el_source">Ticket.java</span></div><h1>Ticket.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.xml.parser;
+
+/*###################################################################################
+#  @Name           :   Ticket.java
+#
+#  @Created        :   Oct Drop 2022
+#
+#  @Description    :   To parse Ticket XML file into pojos to extract checksum values from Box
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2210
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      21-Sept-2022            To parse Ticket XML file into pojos
+######################################################################################*/
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = &quot;&quot;, propOrder = { &quot;ticketID&quot;, &quot;header&quot;, &quot;description&quot;, &quot;boxes&quot; })
+@XmlRootElement(name = &quot;Ticket&quot;)
+<span class="nc" id="L36">public class Ticket {</span>
+	
+<span class="nc" id="L38">	private static  Logger logger = LogManager.getLogger(Ticket.class);</span>
+	
+	@XmlElement(name = &quot;TicketID&quot;, required = false)
+	protected String ticketID;
+	@XmlElement(name = &quot;Header&quot;, required = false)
+	protected String header;
+	@XmlElement(name = &quot;Description&quot;, required = false)
+	protected String description;
+	@XmlElement(name = &quot;Boxes&quot;, required = true)
+	protected Ticket.Boxes boxes;
+
+	public String getTicketID() {
+<span class="nc" id="L50">		return ticketID;</span>
+	}
+
+	public void setTicketID(String ticketID) {
+<span class="nc" id="L54">		this.ticketID = ticketID;</span>
+<span class="nc" id="L55">	}</span>
+
+	public String getDescription() {
+<span class="nc" id="L58">		return description;</span>
+	}
+
+	public void setDescription(String description) {
+<span class="nc" id="L62">		this.description = description;</span>
+<span class="nc" id="L63">	}</span>
+
+	public String getHeader() {
+<span class="nc" id="L66">		return header;</span>
+	}
+
+	public void setHeader(String header) {
+<span class="nc" id="L70">		this.header = header;</span>
+<span class="nc" id="L71">	}</span>
+
+	public Ticket.Boxes getBoxes() {
+<span class="nc" id="L74">		return boxes;</span>
+	}
+
+	public void setBoxes(Ticket.Boxes boxes) {
+<span class="nc" id="L78">		this.boxes = boxes;</span>
+<span class="nc" id="L79">	}</span>
+
+	@XmlAccessorType(XmlAccessType.FIELD)
+	@XmlType(name = &quot;&quot;, propOrder = { &quot;box&quot; })
+<span class="nc" id="L83">	public static class Boxes {</span>
+		@XmlElement(name = &quot;Box&quot;, required = false)
+		protected List&lt;Ticket.Boxes.Box&gt; box;
+
+		public List&lt;Ticket.Boxes.Box&gt; getBox() {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">			if (box == null) {</span>
+<span class="nc" id="L89">				box = new ArrayList&lt;&gt;();</span>
+			}
+<span class="nc" id="L91">			logger.info(&quot;=====boxPOJO======= new ArrayList&lt;Box&gt;();=======&quot;</span>
+							+ box);
+<span class="nc" id="L93">			return this.box;</span>
+		}
+
+		public void setBox(List&lt;Box&gt; box) {
+<span class="nc" id="L97">			this.box = box;</span>
+<span class="nc" id="L98">		}</span>
+
+		@XmlAccessorType(XmlAccessType.FIELD)
+		@XmlType(name = &quot;&quot;, propOrder = { &quot;productNumber&quot;, &quot;rState&quot;,
+				&quot;boxDescription&quot;, &quot;fileSize&quot;, &quot;productType&quot;,
+				&quot;functionDesignation&quot;, &quot;mD5&quot;, &quot;sHA256&quot;, &quot;boxFilename&quot;,
+				&quot;documents&quot; })
+		@XmlRootElement(name = &quot;Boxes&quot;)
+<span class="nc" id="L106">		public static class Box {</span>
+			@XmlElement(name = &quot;ProductNumber&quot;, required = false)
+			private String productNumber;
+
+			@XmlElement(name = &quot;RState&quot;, required = false)
+			private String rState;
+
+			@XmlElement(name = &quot;Description&quot;, required = false)
+			private String boxDescription;
+
+			@XmlElement(name = &quot;FileSize&quot;, required = false)
+			private Integer fileSize;
+
+			@XmlElement(name = &quot;ProductType&quot;, required = false)
+			private String productType;
+
+			@XmlElement(name = &quot;FunctionDesignation&quot;, required = false)
+			private String functionDesignation;
+
+			@XmlElement(name = &quot;MD5&quot;, required = true)
+			private String mD5;
+
+			@XmlElement(name = &quot;SHA256&quot;, required = true)
+			private String sHA256;
+
+			@XmlElement(name = &quot;Filename&quot;, required = false)
+			private String boxFilename;
+
+			@XmlElement(name = &quot;Documents&quot;, required = false)
+			private Documents documents;
+
+			public String getSHA256() {
+<span class="nc" id="L138">				return sHA256;</span>
+			}
+
+			public void setSHA256(String sHA256) {
+<span class="nc" id="L142">				this.sHA256 = sHA256;</span>
+<span class="nc" id="L143">			}</span>
+
+			public String getDescription() {
+<span class="nc" id="L146">				return boxDescription;</span>
+			}
+
+			public void setDescription(String boxDescription) {
+<span class="nc" id="L150">				this.boxDescription = boxDescription;</span>
+<span class="nc" id="L151">			}</span>
+
+			public String getFunctionDesignation() {
+<span class="nc" id="L154">				return functionDesignation;</span>
+			}
+
+			public void setFunctionDesignation(String functionDesignation) {
+<span class="nc" id="L158">				this.functionDesignation = functionDesignation;</span>
+<span class="nc" id="L159">			}</span>
+
+			public Documents getDocuments() {
+<span class="nc" id="L162">				return documents;</span>
+			}
+
+			public void setDocuments(Documents documents) {
+<span class="nc" id="L166">				this.documents = documents;</span>
+<span class="nc" id="L167">			}</span>
+
+			public String getProductType() {
+<span class="nc" id="L170">				return productType;</span>
+			}
+
+			public void setProductType(String productType) {
+<span class="nc" id="L174">				this.productType = productType;</span>
+<span class="nc" id="L175">			}</span>
+
+			public String getFilename() {
+<span class="nc" id="L178">				return boxFilename;</span>
+			}
+
+			public void setFilename(String boxFilename) {
+<span class="nc" id="L182">				this.boxFilename = boxFilename;</span>
+<span class="nc" id="L183">			}</span>
+
+			public String getRState() {
+<span class="nc" id="L186">				return rState;</span>
+			}
+
+			public void setRState(String rState) {
+<span class="nc" id="L190">				this.rState = rState;</span>
+<span class="nc" id="L191">			}</span>
+
+			public String getProductNumber() {
+<span class="nc" id="L194">				return productNumber;</span>
+			}
+
+			public void setProductNumber(String productNumber) {
+<span class="nc" id="L198">				this.productNumber = productNumber;</span>
+<span class="nc" id="L199">			}</span>
+
+			public Integer getFileSize() {
+<span class="nc" id="L202">				return fileSize;</span>
+			}
+
+			public void setFileSize(Integer fileSize) {
+<span class="nc" id="L206">				this.fileSize = fileSize;</span>
+<span class="nc" id="L207">			}</span>
+
+			public String getMD5() {
+<span class="nc" id="L210">				return mD5;</span>
+			}
+
+			public void setMD5(String mD5) {
+<span class="nc" id="L214">				this.mD5 = mD5;</span>
+<span class="nc" id="L215">			}</span>
+
+			@XmlAccessorType(XmlAccessType.FIELD)
+			@XmlType(name = &quot;&quot;, propOrder = { &quot;document&quot; })
+<span class="nc" id="L219">			public static class Documents {</span>
+				@XmlElement(name = &quot;Document&quot;, required = false)
+				protected List&lt;Ticket.Boxes.Box.Documents&gt; document;
+
+				public List&lt;Ticket.Boxes.Box.Documents&gt; getBox() {
+<span class="nc bnc" id="L224" title="All 2 branches missed.">					if (document == null) {</span>
+<span class="nc" id="L225">						document = new ArrayList&lt;&gt;();</span>
+					}
+<span class="nc" id="L227">					logger.info(&quot;=====boxPOJO======= new ArrayList&lt;Box&gt;();=======&quot;</span>
+									+ document);
+<span class="nc" id="L229">					return this.document;</span>
+				}
+
+				public void setDocument(
+						List&lt;Ticket.Boxes.Box.Documents&gt; document) {
+<span class="nc" id="L234">					this.document = document;</span>
+<span class="nc" id="L235">				}</span>
+
+				@XmlAccessorType(XmlAccessType.FIELD)
+				@XmlType(name = &quot;&quot;, propOrder = { &quot;documentNumber&quot;, &quot;revState&quot;,
+						&quot;filename&quot;, &quot;dataFormat&quot;, &quot;languageCode&quot; })
+				@XmlRootElement(name = &quot;Documents&quot;)
+<span class="nc" id="L241">				public static class Document {</span>
+					@XmlElement(name = &quot;LanguageCode&quot;, required = false)
+					protected String languageCode;
+
+					@XmlElement(name = &quot;RevState&quot;, required = false)
+					protected String revState;
+
+					@XmlElement(name = &quot;DataFormat&quot;, required = false)
+					protected String dataFormat;
+
+					@XmlElement(name = &quot;Filename&quot;, required = false)
+					protected String filename;
+
+					@XmlElement(name = &quot;DocumentNumber&quot;, required = false)
+					protected String documentNumber;
+
+					public String getLanguageCode() {
+<span class="nc" id="L258">						return languageCode;</span>
+					}
+
+					public void setLanguageCode(String languageCode) {
+<span class="nc" id="L262">						this.languageCode = languageCode;</span>
+<span class="nc" id="L263">					}</span>
+
+					public String getRevState() {
+<span class="nc" id="L266">						return revState;</span>
+					}
+
+					public void setRevState(String revState) {
+<span class="nc" id="L270">						this.revState = revState;</span>
+<span class="nc" id="L271">					}</span>
+
+					public String getDataFormat() {
+<span class="nc" id="L274">						return dataFormat;</span>
+					}
+
+					public void setDataFormat(String dataFormat) {
+<span class="nc" id="L278">						this.dataFormat = dataFormat;</span>
+<span class="nc" id="L279">					}</span>
+
+					public String getFilename() {
+<span class="nc" id="L282">						return filename;</span>
+					}
+
+					public void setFilename(String filename) {
+<span class="nc" id="L286">						this.filename = filename;</span>
+<span class="nc" id="L287">					}</span>
+
+					public String getDocumentNumber() {
+<span class="nc" id="L290">						return documentNumber;</span>
+					}
+
+					public void setDocumentNumber(String documentNumber) {
+<span class="nc" id="L294">						this.documentNumber = documentNumber;</span>
+<span class="nc" id="L295">					}</span>
+				}
+			}
+		}
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

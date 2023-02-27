@@ -1,0 +1,10 @@
+productName: "SW Gateway Distribution Agent Helm Chart"
+productNumber: "CXD 101 000"
+images:
+  da:
+    productName: "DA Image"
+    productNumber: "CXU 101 000"
+    registry: "armdocker.rnd.ericsson.se"
+    repoPath: "proj-swgw-da-drop"
+    name: "eric-swgwda"
+    tag: "IMAGE_VERSION"

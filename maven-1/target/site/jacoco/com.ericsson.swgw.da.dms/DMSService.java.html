@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DMSService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.dms</a> &gt; <span class="el_source">DMSService.java</span></div><h1>DMSService.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.dms;
+
+import java.io.IOException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.ericsson.swgw.da.bean.DMSBean;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.utils.HttpClientUtils;
+
+public class DMSService {
+		
+<span class="nc" id="L21">	private static  Logger logger = LogManager.getLogger(DMSService.class);</span>
+	
+<span class="nc" id="L23">	public DMSService() {</span>
+<span class="nc" id="L24">		throw new IllegalStateException(&quot;Service class&quot;);</span>
+	}
+	
+
+	public static int sendDMSNotification(DMSBean dmsBean,String productNumber ) throws IOException, JSONException {	
+		
+<span class="nc bnc" id="L30" title="All 2 branches missed.">		if(null == dmsBean){</span>
+<span class="nc" id="L31">			return 0;</span>
+		}
+		
+<span class="nc" id="L34">		JSONObject jsonObj = new JSONObject();</span>
+<span class="nc" id="L35">		jsonObj.put(Constants.EUFT,dmsBean.getEuft()); </span>
+<span class="nc" id="L36">		jsonObj.put(Constants.EUFTGROUPNAME, dmsBean.getEuftGroupName()); </span>
+<span class="nc" id="L37">		jsonObj.put(Constants.TICKET, dmsBean.getTicket()); </span>
+<span class="nc" id="L38">		jsonObj.put(Constants.TICKETHEADER, dmsBean.getTicketHeader());</span>
+<span class="nc" id="L39">		jsonObj.put(Constants.RELATIVE_STORAGE_PATH, dmsBean.getRelative_storage_path()); </span>
+<span class="nc" id="L40">		jsonObj.put(Constants.SPINNAKER_POLLING_ENABLED, dmsBean.getSpinnaker_polling_enabled()); </span>
+		 
+		
+<span class="nc" id="L43">		String sDMSurl = IniConfig.getDMSURL();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if(!sDMSurl.contains(productNumber)){</span>
+<span class="nc" id="L45">			sDMSurl = sDMSurl + &quot;/&quot; + productNumber;</span>
+		}
+		
+<span class="nc" id="L48">		logger.info(&quot;sDMSurl &quot;+ sDMSurl);</span>
+<span class="nc" id="L49">		logger.info(&quot;dmsBean &quot;+ jsonObj.toString());</span>
+<span class="nc" id="L50">		CloseableHttpClient httpClient = null;</span>
+<span class="nc" id="L51">		CloseableHttpResponse response = null;</span>
+
+<span class="nc" id="L53">		HttpPost createPost = new HttpPost();</span>
+		/*if (!authorizationHeader.isEmpty()) {
+			createPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
+		}*/
+
+<span class="nc" id="L58">		String contentType = Constants.APPLICATION_JSON;		</span>
+<span class="nc" id="L59">		int statusCode = 0;</span>
+		try {
+<span class="nc" id="L61">			createPost = HttpClientUtils.createPost(sDMSurl, jsonObj.toString());</span>
+<span class="nc" id="L62">			createPost.setHeader(HttpHeaders.CONTENT_TYPE, contentType);</span>
+
+<span class="nc" id="L64">			httpClient = HttpClientUtils.createMinimalHttpClient();</span>
+<span class="nc" id="L65">			RequestConfig config = getConfigforTimeout();</span>
+<span class="nc" id="L66">			createPost.setConfig(config);</span>
+<span class="nc" id="L67">			response = httpClient.execute(createPost);</span>
+<span class="nc" id="L68">			logger.info(&quot;response &quot;+ response);</span>
+<span class="nc" id="L69">			statusCode = response.getStatusLine().getStatusCode();</span>
+<span class="nc" id="L70">			logger.info(&quot;statusCode &quot;+ statusCode);</span>
+<span class="nc" id="L71">			HttpClientUtils.validateStatusCode(statusCode);</span>
+<span class="nc" id="L72">		} catch (Exception e) {		</span>
+<span class="nc" id="L73">			e.printStackTrace();</span>
+		} finally {
+			
+<span class="nc bnc" id="L76" title="All 2 branches missed.">			if (null != httpClient) </span>
+			{
+<span class="nc" id="L78">				httpClient.close();</span>
+			}
+			
+<span class="nc bnc" id="L81" title="All 2 branches missed.">			if (null != response) </span>
+			{
+<span class="nc" id="L83">				response.close();</span>
+			}
+		}
+<span class="nc" id="L86">		return statusCode;</span>
+	}
+
+	 private static RequestConfig getConfigforTimeout() {
+<span class="nc" id="L90">	        int timeout = 2;</span>
+<span class="nc" id="L91">	        RequestConfig config = RequestConfig.custom().</span>
+<span class="nc" id="L92">	          setConnectTimeout(timeout * 1000).</span>
+<span class="nc" id="L93">	          setConnectionRequestTimeout(timeout * 1000).</span>
+<span class="nc" id="L94">	          setSocketTimeout(timeout * 1000).build();</span>
+<span class="nc" id="L95">	        return config;</span>
+	    }
+	 
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

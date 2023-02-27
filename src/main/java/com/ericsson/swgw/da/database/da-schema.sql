@@ -1,0 +1,6 @@
+create table SWGW_DATA (
+    ID              INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    ClientId        VARCHAR(128) NOT NULL UNIQUE,
+    SecretKey       VARCHAR(128) NOT NULL,
+    PRIMARY KEY (ID)
+);

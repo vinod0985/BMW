@@ -1,0 +1,9 @@
+com/ericsson/swgw/da/controller/TestControllerApplication$2.class
+com/ericsson/swgw/da/controller/TestINIFileRead.class
+com/ericsson/swgw/da/controller/TestControllerApplication.class
+com/ericsson/swgw/da/controller/ControllerApplicationTests.class
+com/ericsson/swgw/da/database/TestDatabase.class
+com/ericsson/swgw/da/database/TestDBConnection.class
+com/ericsson/swgw/da/services/AzureTokenServiceTest.class
+com/ericsson/swgw/da/controller/TestControllerApplication$1.class
+com/ericsson/swgw/da/database/test_DerbyDBService.class

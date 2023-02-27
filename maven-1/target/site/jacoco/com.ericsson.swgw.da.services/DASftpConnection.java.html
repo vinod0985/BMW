@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DASftpConnection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.services</a> &gt; <span class="el_source">DASftpConnection.java</span></div><h1>DASftpConnection.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.services;
+
+import java.util.Vector;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.utils.StringUtils;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+
+/**
+ * A simple SFTP client using JSCH http://www.jcraft.com/jsch/
+ */
+public final class DASftpConnection {
+<span class="nc" id="L20">	private static  Logger logger = LogManager.getLogger(DASftpConnection.class);</span>
+    private static  String hostName;
+    private static  int portNo;
+    private static  String userName;
+    private static  JSch jsch;
+    private static  ChannelSftp channel;
+    private static  Session session;
+
+    /**
+     * @param host     remote hostName
+     * @param port     remote port
+     * @param username remote username
+     */
+<span class="nc" id="L33">    public DASftpConnection(String host, int port, String username) {</span>
+<span class="nc" id="L34">        hostName = host;</span>
+<span class="nc" id="L35">        portNo     = port;</span>
+<span class="nc" id="L36">        userName = username;</span>
+<span class="nc" id="L37">        jsch     = new JSch();</span>
+<span class="nc" id="L38">    }</span>
+
+    /**
+     * Use default port 22
+     *
+     * @param host     remote host
+     * @param username username on host
+     */
+    public DASftpConnection(String host, String username) {
+<span class="nc" id="L47">        this(hostName, 22, username);</span>
+<span class="nc" id="L48">    }</span>
+    
+    /**
+     * @param loadProperties
+     */
+   /* public DASftpConnection(LoadProperties sftploadProperties) {
+    	loadProperties= sftploadProperties;
+    	jsch          = new JSch();
+	}*/
+    
+    /**
+     * @param loadProperties
+     */
+<span class="nc" id="L61">    public DASftpConnection() {</span>
+<span class="nc" id="L62">    	jsch          = new JSch();</span>
+<span class="nc" id="L63">	}</span>
+
+	public ChannelSftp sftpConnection() throws JSchException {
+		try {
+<span class="nc" id="L67">			hostName = IniConfig.getCascIP();</span>
+<span class="nc" id="L68">			String casPort = IniConfig.getCascPort();</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">			if(!StringUtils.isOnlyWhitespaceOrEmpty(casPort)){</span>
+<span class="nc" id="L70">				portNo = Integer.parseInt(casPort);</span>
+			}else{
+<span class="nc" id="L72">				portNo = 22;</span>
+			}
+			
+<span class="nc" id="L75">			userName = IniConfig.getCascUsername();</span>
+<span class="nc" id="L76">			String password = IniConfig.getCascPassword();</span>
+<span class="nc" id="L77">			channel = authPassword(password);</span>
+<span class="nc" id="L78">			logger.info(&quot; Connection to CASC was established &quot;);</span>
+<span class="nc" id="L79">		} catch (JSchException e) {</span>
+<span class="nc" id="L80">			logger.error(&quot;Failed to establish connection to CASC&quot;);</span>
+<span class="nc" id="L81">			logger.error(&quot;Check configuration to see if username/password is configured correctly&quot;);</span>
+<span class="nc" id="L82">			throw new JSchException(e.getMessage());</span>
+<span class="nc" id="L83">		}</span>
+<span class="nc" id="L84">		return channel;</span>
+	}
+	
+	public ChannelSftp sftp_Connection() throws JSchException {
+		try {
+<span class="nc" id="L89">			hostName = IniConfig.getDADestIP();</span>
+<span class="nc" id="L90">			String DAPort = IniConfig.getDADestPort();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">			if(!StringUtils.isOnlyWhitespaceOrEmpty(DAPort)){</span>
+<span class="nc" id="L92">				portNo = Integer.parseInt(DAPort);</span>
+			}else{
+<span class="nc" id="L94">				portNo = 22;</span>
+			}
+			
+<span class="nc" id="L97">			userName = IniConfig.getDADestUsername();</span>
+<span class="nc" id="L98">			String password = IniConfig.getDADestPassword();</span>
+<span class="nc" id="L99">			channel = authPassword(password);</span>
+<span class="nc" id="L100">			System.out.println(&quot; Connection was established Successfully&quot;);</span>
+<span class="nc" id="L101">		} catch (JSchException e) {</span>
+<span class="nc" id="L102">			System.out.println(&quot;Failed to establish connection&quot;);</span>
+<span class="nc" id="L103">			System.out.println(&quot;Check configuration to see if username/password is configured correctly&quot;);</span>
+<span class="nc" id="L104">			throw new JSchException(e.getMessage());</span>
+<span class="nc" id="L105">		}</span>
+<span class="nc" id="L106">		return channel;</span>
+	}
+
+    /**
+     * Authenticate with remote using password
+     *
+     * @param password password of remote
+     * @return 
+     * @throws JSchException If there is problem with credentials or connection
+     */
+    public static ChannelSftp authPassword(String password) throws JSchException {
+<span class="nc" id="L117">        session = jsch.getSession(userName, hostName, portNo);</span>
+        //disable known hosts checking
+        //if you want to set knows hosts file You can set with jsch.setKnownHosts(&quot;path to known hosts file&quot;);
+<span class="nc" id="L120">        java.util.Properties config = new java.util.Properties();</span>
+<span class="nc" id="L121">        config.put(&quot;StrictHostKeyChecking&quot;, &quot;no&quot;);</span>
+<span class="nc" id="L122">        session.setConfig(config);</span>
+<span class="nc" id="L123">        session.setPassword(password);</span>
+<span class="nc" id="L124">        session.connect();</span>
+<span class="nc" id="L125">        logger.info(&quot;Host connected with port securely&quot;);</span>
+<span class="nc" id="L126">        return (ChannelSftp) session.openChannel(&quot;sftp&quot;);</span>
+        
+    }
+
+
+    public ChannelSftp authKey(String keyPath, String pass) throws JSchException {
+<span class="nc" id="L132">        jsch.addIdentity(keyPath, pass);</span>
+<span class="nc" id="L133">        session = jsch.getSession(userName, hostName, portNo);</span>
+        //disable known hosts checking
+        //if you want to set knows hosts file You can set with jsch.setKnownHosts(&quot;path to known hosts file&quot;);
+<span class="nc" id="L136">        java.util.Properties config = new java.util.Properties();</span>
+<span class="nc" id="L137">        config.put(&quot;StrictHostKeyChecking&quot;, &quot;no&quot;);</span>
+<span class="nc" id="L138">        session.setConfig(config);</span>
+<span class="nc" id="L139">        session.connect();</span>
+<span class="nc" id="L140">        return (ChannelSftp) session.openChannel(&quot;sftp&quot;);</span>
+    }
+    
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void listFiles(String remoteDir) throws SftpException, JSchException {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (channel == null) {</span>
+<span class="nc" id="L146">            throw new IllegalArgumentException(&quot;Connection is not available&quot;);</span>
+        }
+<span class="nc" id="L148">        System.out.printf(&quot;Listing [%s]...%n&quot;, remoteDir);</span>
+<span class="nc" id="L149">        channel.cd(remoteDir);</span>
+<span class="nc" id="L150">        Vector&lt;ChannelSftp.LsEntry&gt; files = channel.ls(&quot;.&quot;);</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        for (ChannelSftp.LsEntry file : files) {</span>
+<span class="nc" id="L152">            String name        = file.getFilename();</span>
+<span class="nc" id="L153">            System.out.printf(name);</span>
+<span class="nc" id="L154">        }</span>
+<span class="nc" id="L155">    }</span>
+    
+    /**
+     * Disconnect from remote
+     */
+    public void close() {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (channel != null) {</span>
+<span class="nc" id="L162">            channel.exit();</span>
+        }
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        if (session != null &amp;&amp; session.isConnected()) {</span>
+<span class="nc" id="L165">            session.disconnect();</span>
+        }
+<span class="nc" id="L167">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

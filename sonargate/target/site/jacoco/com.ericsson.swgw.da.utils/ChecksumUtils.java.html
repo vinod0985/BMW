@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChecksumUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.utils</a> &gt; <span class="el_source">ChecksumUtils.java</span></div><h1>ChecksumUtils.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.utils;
+
+/*###################################################################################
+#  @Name           :   ChecksumUtils.java
+#
+#  @Created        :   Oct Drop 2022
+#
+#  @Description    :   Checksum Util methods
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2210
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      21-Sept-2022            To verify checksums of the downloaded files
+######################################################################################*/
+
+import java.io.File;
+
+//import jonelo.jacksum.JacksumAPI;
+//import jonelo.jacksum.algorithm.AbstractChecksum;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import jonelo.jacksum.JacksumAPI;
+import jonelo.jacksum.algorithm.AbstractChecksum;
+
+public class ChecksumUtils {
+	
+<span class="fc" id="L34">	private static  Logger logger = LogManager.getLogger(ChecksumUtils.class);</span>
+			
+<span class="nc" id="L36">	private ChecksumUtils() {</span>
+<span class="nc" id="L37">		throw new IllegalStateException(&quot;Utility class&quot;);</span>
+	}
+	
+	public static String calculateChecksum(byte[] bytes, String checksumType) {
+<span class="nc" id="L41">		String returnValue = &quot;&quot;;</span>
+		try {
+			
+<span class="nc" id="L44">			  AbstractChecksum checksumInstance = JacksumAPI</span>
+<span class="nc" id="L45">			  .getChecksumInstance(checksumType);</span>
+<span class="nc" id="L46">			  checksumInstance.setEncoding(AbstractChecksum.HEX);</span>
+<span class="nc" id="L47">			  checksumInstance.update(bytes);</span>
+			  
+<span class="nc" id="L49">			  String formattedValue = checksumInstance.getFormattedValue();</span>
+<span class="nc" id="L50">			  checksumInstance.reset(); returnValue = padString(formattedValue, &quot;0&quot;, -8);</span>
+			 
+<span class="nc" id="L52">		} catch (Exception e) {</span>
+<span class="nc" id="L53">			logger.error(&quot;Could not calculate checksum!&quot; + e.getMessage());</span>
+<span class="nc" id="L54">		}</span>
+<span class="nc" id="L55">		return returnValue;</span>
+	}
+	
+	public static String calculateChecksum(File file, String checksumType) {
+<span class="fc" id="L59">		String returnValue = &quot;&quot;;</span>
+		try {
+			
+<span class="fc" id="L62">			  AbstractChecksum checksumInstance = JacksumAPI</span>
+<span class="fc" id="L63">			  .getChecksumInstance(checksumType);</span>
+<span class="fc" id="L64">			  checksumInstance.setEncoding(AbstractChecksum.HEX);</span>
+<span class="fc" id="L65">			  checksumInstance.readFile(file.getCanonicalPath()); String formattedValue =</span>
+<span class="fc" id="L66">			  checksumInstance.getFormattedValue(); returnValue = padString(formattedValue,</span>
+			  &quot;0&quot;, -8);
+			 
+<span class="nc" id="L69">		} catch (Exception e) {</span>
+<span class="nc" id="L70">			logger.error(&quot;Could not calculate checksum!&quot; + e.getMessage());</span>
+<span class="fc" id="L71">		}</span>
+<span class="fc" id="L72">		return returnValue;</span>
+	}
+	
+	private static String padString(String str, String pad, int len) {
+<span class="fc" id="L76">		StringBuilder strb = new StringBuilder();</span>
+
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		for (int i = 0; i &lt; Math.abs(len) - str.length(); i++) {</span>
+<span class="nc" id="L79">			strb.append(pad);</span>
+		}
+
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">		return len &lt; 0 ? strb.toString() + str : str + strb.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

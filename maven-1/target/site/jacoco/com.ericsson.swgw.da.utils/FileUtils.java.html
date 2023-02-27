@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.utils</a> &gt; <span class="el_source">FileUtils.java</span></div><h1>FileUtils.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.utils;
+
+/*###################################################################################
+ #  @Name           :   FileUtils.java
+ #
+ #  @Created        :   Sep Drop 2022
+ #
+ #  @Description    :   To store webhook payload content into a file
+ #
+ #  @Programmer     :   Eswar D
+ #
+ #  @Organization   :   HCL
+ #
+ #  @Release        :   MR2209
+ #
+ #  @History        :
+ #      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+ #      ZDARESW(Eswar)      29-Aug-2022            store webhook content into a file
+ ######################################################################################*/
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.springframework.http.MediaType;
+
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.exception.CustomException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
+<span class="nc" id="L41">public class FileUtils {</span>
+	
+<span class="fc" id="L43">	private static  Logger logger = LogManager.getLogger(FileUtils.class);</span>
+	/*private static final String SIGNATURE_FILES = &quot;SignatureFiles&quot;;
+	private static final int BUFFER_SIZE = 4096;*/
+	private static InputStream inputStream;
+	private static FileOutputStream outputStream;
+<span class="fc" id="L48">	private static String currentDirectory = System</span>
+<span class="fc" id="L49">			.getProperty(Constants.USER_DIR);</span>
+<span class="fc" id="L50">	private static String logsPath = currentDirectory + &quot;/logs&quot;;</span>
+<span class="fc" id="L51">	private static String testResourcePath = currentDirectory</span>
+			+ &quot;/test-resources&quot;;
+<span class="fc" id="L53">	private static String configPath = currentDirectory + &quot;/configurations&quot;;</span>
+	
+	
+//	static{
+//		System.out.println(&quot;currentDirectory....................&quot;+currentDirectory);
+//		if(StringUtils.isOnlyWhitespaceOrEmpty(currentDirectory)){
+//			currentDirectory = &quot;/data/distribution_agent&quot;;
+//		}else{
+//			File file = new File(currentDirectory);
+//			if(!file.isDirectory()){
+//				currentDirectory = &quot;/data/distribution_agent&quot;;
+//			}
+//		}
+//		System.out.println(&quot;currentDirectory after verification....................&quot;+currentDirectory);
+//	}
+
+	/**
+	 * @param payload
+	 * @param contentType
+	 * @param storeMultipleFile
+	 * @throws Exception
+	 */
+	public static void savePayload(
+			Map&lt;String, Object&gt; payload, MediaType contentType,
+			String storeMultipleFile) throws Exception {
+		//		if (storeMultipleFile.equalsIgnoreCase(&quot;TRUE&quot;)) {
+<span class="fc" id="L79">		String ticketId =&quot;&quot;;</span>
+<span class="pc bpc" id="L80" title="3 of 6 branches missed.">		if(payload.containsKey(Constants.TICKET) &amp;&amp; !(Constants.NULL).equals((payload.get(Constants.TICKET))) &amp;&amp; !StringUtils.isOnlyWhitespaceOrEmpty((String) payload.get(Constants.TICKET))){</span>
+<span class="fc" id="L81">			ticketId = (String) payload.get(Constants.TICKET);</span>
+		}
+<span class="fc" id="L83">			multipleFile(payload, contentType,ticketId);</span>
+
+//		} else {
+//			singleFile(payload,ticketId);
+//		}
+
+<span class="fc" id="L89">	}</span>
+
+//	private static void singleFile(Map&lt;String, Object&gt; payload)
+//			throws JsonProcessingException, IOException {
+//		String fileName = &quot;storePayload.out&quot;;
+//		String jsonStr = new ObjectMapper().writeValueAsString(payload);
+//		File file = new File(logsPath, fileName);
+//		if (!file.exists()) {
+//			file.createNewFile();
+//		}
+//		BufferedWriter bf = null;
+//		try {
+//			bf = new BufferedWriter(new FileWriter(file));
+//			bf.write(jsonStr);
+//			bf.flush();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally {
+//			if(null != bf){
+//				bf.close();
+//			}
+//			
+//		}
+//	}
+
+	private static void multipleFile(Map&lt;String, Object&gt; payload,
+			MediaType contentType, String ticketId) throws Exception {
+<span class="fc" id="L116">		BufferedWriter bfWriter = null;</span>
+<span class="fc" id="L117">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L118">		sb.append(&quot;Webhook_&quot;);</span>
+<span class="fc" id="L119">		sb.append(ticketId);</span>
+<span class="fc" id="L120">		sb.append(&quot;_&quot;);</span>
+<span class="fc" id="L121">		String format = contentType.toString();</span>
+		try {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">			if ((format.equalsIgnoreCase(Constants.APPLICATION_JSON))) {</span>
+<span class="fc" id="L124">				String fileName = sb.toString();</span>
+<span class="fc" id="L125">				String jsonStr = new ObjectMapper()</span>
+<span class="fc" id="L126">						.writeValueAsString(payload);</span>
+<span class="fc" id="L127">				File file = File.createTempFile(fileName,</span>
+						Constants.JSON_EXT, new File(logsPath));
+<span class="fc" id="L129">					bfWriter = new BufferedWriter(new FileWriter(file));</span>
+<span class="fc" id="L130">					bfWriter.write(jsonStr);</span>
+<span class="fc" id="L131">					bfWriter.flush();</span>
+				
+
+<span class="pc bnc" id="L134" title="All 4 branches missed.">			} else if (format.equalsIgnoreCase(Constants.TEXT_XML) || format.equalsIgnoreCase(Constants.APPLICATION_XML) ) {</span>
+<span class="nc" id="L135">				String fileName = sb.toString();</span>
+<span class="nc" id="L136">				String xmlStr = new XmlMapper()</span>
+<span class="nc" id="L137">						.writeValueAsString(payload);</span>
+<span class="nc" id="L138">				File file = File.createTempFile(fileName,</span>
+						Constants.XML_EXT, new File(logsPath));
+			
+<span class="nc" id="L141">					bfWriter = new BufferedWriter(new FileWriter(file));</span>
+<span class="nc" id="L142">					bfWriter.write(xmlStr);</span>
+<span class="nc" id="L143">					bfWriter.flush();</span>
+			}
+
+<span class="nc" id="L146">		} catch (Exception e) {</span>
+<span class="nc" id="L147">			e.printStackTrace();</span>
+<span class="nc" id="L148">			throw new CustomException();</span>
+		} finally {
+			try {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">				if (bfWriter != null) {</span>
+<span class="fc" id="L152">					bfWriter.close();</span>
+				}
+<span class="nc" id="L154">			} catch (IOException e) {</span>
+<span class="nc" id="L155">				e.printStackTrace();</span>
+<span class="fc" id="L156">			}</span>
+		}
+<span class="fc" id="L158">	}</span>
+
+	public static void createTemplateFile() {
+<span class="fc" id="L161">		String fileName = Constants.TEMPLATE_FILE;</span>
+<span class="fc" id="L162">		logger.info(&quot;Current dir &amp; congig path.......&quot;+configPath);</span>
+<span class="fc" id="L163">		File file = new File(configPath);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L165">			file.mkdir();</span>
+		}
+<span class="fc" id="L167">		logger.info(&quot;Current dir &amp; congig path.......&quot;+file.getAbsolutePath());</span>
+<span class="fc" id="L168">		File template = new File(configPath, fileName);</span>
+<span class="fc" id="L169">		logger.info(&quot;template.ini path .......&quot;+template.getAbsolutePath());</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">		if (!template.exists()) {</span>
+			try {
+<span class="nc" id="L172">				template.createNewFile();</span>
+<span class="nc" id="L173">				logger.info(&quot;template.ini path .......&quot;+template.getAbsolutePath());</span>
+<span class="nc" id="L174">				inputStream = FileUtils.class.getClassLoader()</span>
+<span class="nc" id="L175">						.getResourceAsStream(fileName);</span>
+<span class="nc" id="L176">				outputStream = new FileOutputStream(configPath</span>
+						+ Constants.BACK_SLASH + fileName);
+				int n;
+<span class="nc bnc" id="L179" title="All 2 branches missed.">				while ((n = inputStream.read()) != -1) {</span>
+<span class="nc" id="L180">					outputStream.write(n);</span>
+				}
+			}
+
+<span class="nc" id="L184">			catch (IOException e) {</span>
+<span class="nc" id="L185">				e.printStackTrace();</span>
+			} finally {
+				try {
+<span class="nc" id="L188">					inputStream.close();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">					if (null != outputStream) {</span>
+<span class="nc" id="L190">						outputStream.close();</span>
+					}
+<span class="nc" id="L192">				} catch (IOException e) {</span>
+<span class="nc" id="L193">					e.printStackTrace();</span>
+<span class="nc" id="L194">				}</span>
+
+			}
+		}
+<span class="fc" id="L198">		logger.info(&quot;template.ini path .......&quot;+template.getAbsolutePath());</span>
+<span class="fc" id="L199">	}</span>
+
+	public static void createSSLTemplate() {
+<span class="fc" id="L202">		String fileName = Constants.ADDITIONAL_PROPERTIES;</span>
+<span class="fc" id="L203">		File file = new File(configPath);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L205">			file.mkdir();</span>
+		}
+<span class="fc" id="L207">		File templateSSL = new File(configPath, fileName);</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">		if (!templateSSL.exists()) {</span>
+			try {
+<span class="nc" id="L210">				templateSSL.createNewFile();</span>
+<span class="nc" id="L211">				inputStream = FileUtils.class.getClassLoader()</span>
+<span class="nc" id="L212">						.getResourceAsStream(fileName);</span>
+<span class="nc" id="L213">				outputStream = new FileOutputStream(configPath</span>
+						+ Constants.BACK_SLASH + fileName);
+				int n;
+<span class="nc bnc" id="L216" title="All 2 branches missed.">				while ((n = inputStream.read()) != -1) {</span>
+<span class="nc" id="L217">					outputStream.write(n);</span>
+				}
+<span class="nc" id="L219">			} catch (IOException e) {</span>
+<span class="nc" id="L220">				e.printStackTrace();</span>
+			} finally {
+				try {
+<span class="nc" id="L223">					inputStream.close();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">					if (null != outputStream) {</span>
+<span class="nc" id="L225">						outputStream.close();</span>
+					}
+<span class="nc" id="L227">				} catch (IOException e) {</span>
+<span class="nc" id="L228">					e.printStackTrace();</span>
+<span class="nc" id="L229">				}</span>
+
+			}
+		}
+<span class="fc" id="L233">	}</span>
+
+	public static void createlogs() {
+<span class="fc" id="L236">		File file = new File(logsPath);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L238">			file.mkdir();</span>
+		}
+<span class="fc" id="L240">	}</span>
+
+	public static void createTestResorces() {
+<span class="fc" id="L243">		String fileName = Constants.READ_SECRETS;</span>
+<span class="fc" id="L244">		File file = new File(testResourcePath);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L246">			file.mkdir();</span>
+		}
+<span class="fc" id="L248">		File templateSecrets = new File(testResourcePath, fileName);</span>
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">		if (!templateSecrets.exists()) {</span>
+			try {
+<span class="nc" id="L251">				templateSecrets.createNewFile();</span>
+<span class="nc" id="L252">				inputStream = FileUtils.class.getClassLoader()</span>
+<span class="nc" id="L253">						.getResourceAsStream(fileName);</span>
+<span class="nc" id="L254">				outputStream = new FileOutputStream(testResourcePath</span>
+						+ Constants.BACK_SLASH + fileName);
+				int n;
+<span class="nc bnc" id="L257" title="All 2 branches missed.">				while ((n = inputStream.read()) != -1) {</span>
+<span class="nc" id="L258">					outputStream.write(n);</span>
+				}
+<span class="nc" id="L260">			}catch (IOException e) {</span>
+<span class="nc" id="L261">				e.printStackTrace();</span>
+			} finally {
+				try {
+<span class="nc" id="L264">					inputStream.close();</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">					if (null != outputStream) {</span>
+<span class="nc" id="L266">						outputStream.close();</span>
+					}
+<span class="nc" id="L268">				} catch (IOException e) {</span>
+<span class="nc" id="L269">					e.printStackTrace();</span>
+<span class="nc" id="L270">				}</span>
+			}
+		}
+
+<span class="fc" id="L274">	}</span>
+
+	public static void createAnchorFile() throws IOException {
+<span class="fc" id="L277">		String fileName = Constants.TRUST_ANCHOR_FILE;</span>
+<span class="fc" id="L278">		File file = new File(currentDirectory,fileName);</span>
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="fc" id="L280">			PullUtils.pullAnchorFile(Constants.TRUST_ANCHOR_FILE_URL, fileName, currentDirectory);</span>
+		}	
+<span class="fc" id="L282">	}</span>
+	
+	/*public static synchronized File unzip(String zipFilePath,
+			String destDirectory, String extractFolderName) throws IOException {
+		File destDir = new File(destDirectory);
+		if (!destDir.exists()) {
+			destDir.mkdir();
+		}
+
+		ZipInputStream zipIn = new ZipInputStream(new FileInputStream(
+				zipFilePath));
+		ZipEntry entry = zipIn.getNextEntry();
+
+		// create Sub directory
+		File subdir = new File(destDirectory + File.separator
+				+ extractFolderName);
+		subdir.mkdir();
+
+		// iterates over entries in the zip file
+		while (entry != null) {
+			String filePath = destDirectory + File.separator
+					+ extractFolderName + File.separator + entry.getName();
+
+			if (entry.getName().contains(
+					SIGNATURE_FILES)) {
+				File dir = new File(destDirectory + File.separator
+						+ extractFolderName + File.separator
+						+ SIGNATURE_FILES);
+				dir.mkdir();
+			}
+
+			if (!entry.isDirectory()) {
+				// if the entry is a file, extracts it
+				extractFile(zipIn, filePath);
+			} else {
+				// if the entry is a directory, make the directory
+				File dir = new File(filePath);
+				dir.mkdir();
+			}
+			zipIn.closeEntry();
+			entry = zipIn.getNextEntry();
+		}
+		zipIn.close();
+		return subdir;
+	}*/
+
+	/* private static synchronized void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+	        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
+	        byte[] bytesIn = new byte[BUFFER_SIZE];
+	        int read = 0;
+	        while ((read = zipIn.read(bytesIn)) != -1) {
+	            bos.write(bytesIn, 0, read);
+	        }
+	        bos.close();
+	    }*/
+	 
+	 public static synchronized File renameDir(String dirpath) {
+<span class="nc" id="L339">	        String newDirName = &quot;SignatureFiles_old&quot;;</span>
+<span class="nc" id="L340">	        File destDir = new File(dirpath);</span>
+<span class="nc bnc" id="L341" title="All 4 branches missed.">	        if (destDir.exists() &amp;&amp; destDir.isDirectory()) {</span>
+<span class="nc" id="L342">	            File newDir = new File(destDir.getParent() + File.separator + newDirName);</span>
+<span class="nc" id="L343">	            destDir.renameTo(newDir);</span>
+	        }
+<span class="nc" id="L345">	        return destDir;</span>
+	    }
+	 
+	 public static boolean removeTemporaryFile(File file, boolean deleteDirectory) {
+<span class="nc bnc" id="L349" title="All 2 branches missed.">	        if (deleteDirectory) {</span>
+<span class="nc" id="L350">	            File fileDirectory = file.getParentFile();</span>
+<span class="nc bnc" id="L351" title="All 4 branches missed.">	            if (fileDirectory != null &amp;&amp; fileDirectory.isDirectory()) {</span>
+<span class="nc bnc" id="L352" title="All 4 branches missed.">	                return file.delete() &amp;&amp; fileDirectory.delete();</span>
+	            }
+	        }
+<span class="nc" id="L355">	        return file.delete();</span>
+	    }
+	 
+	 public static org.codehaus.jettison.json.JSONObject readFromFileforJSON_data_append(File file) throws IOException {
+<span class="nc" id="L359">	        org.codehaus.jettison.json.JSONObject json = null;</span>
+	            BufferedReader reader;
+<span class="nc" id="L361">	            reader = new BufferedReader(new FileReader(file));</span>
+	            try {
+<span class="nc" id="L363">	                StringBuilder builder = new StringBuilder();</span>
+	                String str;
+<span class="nc bnc" id="L365" title="All 2 branches missed.">	                while ((str = reader.readLine()) != null) {</span>
+<span class="nc" id="L366">	                    builder.append(str);</span>
+	                }
+<span class="nc" id="L368">	                reader.close();</span>
+<span class="nc" id="L369">	                json = new org.codehaus.jettison.json.JSONObject(builder.toString());</span>
+<span class="nc" id="L370">	            } catch (JSONException e) {</span>
+<span class="nc" id="L371">	                logger.error(&quot; Unable to read from file: &quot; + e.getMessage());</span>
+<span class="nc" id="L372">	                e.printStackTrace();</span>
+	            }finally{
+<span class="nc" id="L374">	                reader.close();</span>
+	            }
+<span class="nc" id="L376">	            return json;</span>
+	}
+
+	public static boolean moveFileToDestination(String sourceDir,String destinationDir, String fileName) {
+<span class="nc" id="L380">		File tempFile = new File (sourceDir + Constants.BACK_SLASH+ fileName);</span>
+		
+<span class="nc bnc" id="L382" title="All 2 branches missed.">		if (tempFile.exists()){</span>
+<span class="nc" id="L383">			boolean isMoved = tempFile.renameTo(new File(destinationDir + Constants.BACK_SLASH+ fileName));</span>
+<span class="nc" id="L384">			return isMoved;</span>
+		}
+<span class="nc" id="L386">		return false;</span>
+	}
+	
+	public static boolean moveFileToDestination(String sourceDir,String destinationDir, String sourFileName, String destFileName) {
+<span class="fc" id="L390">		File tempFile = new File (sourceDir + Constants.BACK_SLASH+ sourFileName);</span>
+<span class="fc" id="L391">		System.out.println(&quot;sourceDir getAbsolutePath::::&quot;+tempFile.getAbsolutePath());</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">		if (tempFile.exists()){</span>
+<span class="fc" id="L393">			System.out.println(&quot;destinationDir getAbsolutePath:::&quot;+destinationDir + Constants.BACK_SLASH+ destFileName);</span>
+
+<span class="fc" id="L395">			boolean isMoved = tempFile.renameTo(new File(destinationDir + Constants.BACK_SLASH+ destFileName));</span>
+<span class="fc" id="L396">			System.out.println(&quot;isMoved::::&quot;+isMoved);</span>
+
+<span class="fc" id="L398">			return isMoved;</span>
+		}
+<span class="nc" id="L400">		return false;</span>
+	}
+
+	public static void deleteFile(String path, String fileName) {
+<span class="nc" id="L404">		File file = new File (path + Constants.BACK_SLASH+ fileName);</span>
+		
+<span class="nc bnc" id="L406" title="All 2 branches missed.">		if (file.exists()){</span>
+<span class="nc" id="L407">			file.delete();</span>
+		}
+<span class="nc" id="L409">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

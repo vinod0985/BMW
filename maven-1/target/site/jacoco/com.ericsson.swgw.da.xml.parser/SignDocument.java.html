@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignDocument.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.xml.parser</a> &gt; <span class="el_source">SignDocument.java</span></div><h1>SignDocument.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.xml.parser;
+
+
+import java.io.File;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import com.ericsson.swgw.da.utils.StringUtils;
+
+
+@XmlRootElement(name = &quot;document&quot;)
+@XmlAccessorType(XmlAccessType.FIELD)
+public class SignDocument {
+
+<span class="nc" id="L19">    public SignDocument() {</span>
+<span class="nc" id="L20">    }</span>
+
+//    public SignDocument(com.ericsson.swgw.da.xml.parser.SignDocument documentBean) {
+//        this.documentNumber = documentBean.getCurrentDocumentNumber();
+//        this.documentRevision = documentBean.getCurrentDocumentRevision();
+//        this.fileName = documentBean.getDocumentTitle();
+//
+//        // TODO add format from GASK add languageCode from GASK
+//    }
+
+    // Modified for Eridoc integration
+    public SignDocument(String documentNumber,
+                    String documentRevision,
+                    String languageCode,
+                    String format,
+                    String fileName) {
+<span class="nc" id="L36">        super();</span>
+<span class="nc" id="L37">        this.documentNumber = documentNumber;</span>
+<span class="nc" id="L38">        this.documentRevision = documentRevision;</span>
+<span class="nc" id="L39">        this.languageCode = languageCode;</span>
+<span class="nc" id="L40">        this.format = format;</span>
+<span class="nc" id="L41">        this.fileName = fileName;</span>
+<span class="nc" id="L42">    }</span>
+
+    @XmlElement(name = &quot;document-number&quot;)
+    private String documentNumber;
+
+    @XmlElement(name = &quot;document-revision&quot;)
+    private String documentRevision;
+
+    @XmlElement(name = &quot;language-code&quot;)
+    private String languageCode;
+
+    @XmlElement(name = &quot;format&quot;)
+    private String format;
+
+    @XmlElement(name = &quot;filename&quot;)
+    private String fileName;
+
+    // Added for Eridoc integration
+    @XmlElement(name = &quot;archive&quot;, required = false)
+    private String archive;
+
+    @XmlTransient()
+    private String gaskFileName;
+
+    // Added for Eridoc integration
+    @XmlTransient()
+    private String eridocFileName;
+
+    @XmlTransient()
+    private String seqNo;
+
+    @XmlTransient()
+    private String sha256;
+
+    @XmlTransient()
+    private FTPFile ftpFile;
+
+    @XmlTransient()
+    private File file;
+
+    @XmlTransient()
+    private double fileSize;
+
+    @XmlTransient()
+    private String packetId;
+
+    public String getPacketId() {
+<span class="nc" id="L89">        return packetId;</span>
+    }
+
+    public void setPacketId(String packetId) {
+<span class="nc" id="L93">        this.packetId = packetId;</span>
+<span class="nc" id="L94">    }</span>
+
+    public String getGaskFileName() {
+<span class="nc" id="L97">        return gaskFileName;</span>
+    }
+
+    public void setGaskFileName(String gaskFileName) {
+<span class="nc" id="L101">        this.gaskFileName = gaskFileName;</span>
+<span class="nc" id="L102">    }</span>
+
+    public String getEridocFileName() {
+<span class="nc" id="L105">        return eridocFileName;</span>
+    }
+
+    public void setEridocFileName(String eridocFileName) {
+<span class="nc" id="L109">        this.eridocFileName = eridocFileName;</span>
+<span class="nc" id="L110">    }</span>
+
+    public String getDocumentNumber() {
+<span class="nc" id="L113">        return documentNumber;</span>
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+<span class="nc" id="L117">        this.documentNumber = documentNumber;</span>
+<span class="nc" id="L118">    }</span>
+
+    public String getLanguageCode() {
+<span class="nc" id="L121">        return languageCode;</span>
+    }
+
+    public void setLanguageCode(String languageCode) {
+<span class="nc" id="L125">        this.languageCode = languageCode;</span>
+<span class="nc" id="L126">    }</span>
+
+    public String getFileName() {
+<span class="nc" id="L129">        return fileName;</span>
+    }
+
+    public void setFileName(String fileName) {
+<span class="nc" id="L133">        this.fileName = fileName;</span>
+<span class="nc" id="L134">    }</span>
+
+    /*
+     * public String getArchive() { return archive; }
+     */
+    public String getArchive() {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        return StringUtils.isOnlyWhitespaceOrEmpty(archive) ? StringUtils.EMPTY_STRING : archive;</span>
+    }
+
+    public void setArchive(String archive) {
+<span class="nc" id="L144">        this.archive = archive;</span>
+<span class="nc" id="L145">    }</span>
+
+    public String getFormat() {
+<span class="nc" id="L148">        return format;</span>
+    }
+
+    public void setFormat(String format) {
+<span class="nc" id="L152">        this.format = format;</span>
+<span class="nc" id="L153">    }</span>
+
+    public String getDocumentRevision() {
+<span class="nc" id="L156">        return documentRevision;</span>
+    }
+
+    public void setDocumentRevision(String documentRevision) {
+<span class="nc" id="L160">        this.documentRevision = documentRevision;</span>
+<span class="nc" id="L161">    }</span>
+
+    public String getSeqNo() {
+<span class="nc" id="L164">        return seqNo;</span>
+    }
+
+    public void setSeqNo(int seqNo) {
+<span class="nc" id="L168">        this.seqNo = String.valueOf(seqNo);</span>
+<span class="nc" id="L169">    }</span>
+
+    public FTPFile getFtpFile() {
+<span class="nc" id="L172">        return ftpFile;</span>
+    }
+
+    public File getFile() {
+<span class="nc" id="L176">        return file;</span>
+    }
+
+    public void setFtpFile(FTPFile ftpFile) {
+<span class="nc" id="L180">        this.ftpFile = ftpFile;</span>
+<span class="nc" id="L181">    }</span>
+
+    public void setFile(File file) {
+<span class="nc" id="L184">        this.file = file;</span>
+<span class="nc" id="L185">    }</span>
+
+    public double getFileSize() {
+<span class="nc" id="L188">        return fileSize;</span>
+    }
+
+    public void setFileSize(double fileSize) {
+<span class="nc" id="L192">        this.fileSize = fileSize;</span>
+<span class="nc" id="L193">    }</span>
+
+    /**
+     * @return the sha256
+     */
+    public String getSha256() {
+<span class="nc" id="L199">        return sha256;</span>
+    }
+
+    /**
+     * @param sha256 the sha256 to set
+     */
+    public void setSha256(String sha256) {
+<span class="nc" id="L206">        this.sha256 = sha256;</span>
+<span class="nc" id="L207">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

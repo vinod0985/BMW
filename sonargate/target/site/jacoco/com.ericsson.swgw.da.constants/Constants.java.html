@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Constants.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.constants</a> &gt; <span class="el_source">Constants.java</span></div><h1>Constants.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.constants;
+
+/*###################################################################################
+#  @Name           :   Constants.java
+#
+#  @Created        :   Sep Drop 2022
+#
+#  @Description    :   To receive payload from SW Gateway.
+#
+#  @Programmer     :   Eswar D, Rajni Kumari
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2209
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      25-Aug-2022            Created Constants for custom response message.
+######################################################################################*/
+
+public class Constants {
+	
+<span class="nc" id="L23">	public Constants() {</span>
+<span class="nc" id="L24">	    throw new IllegalStateException(&quot;Constant class&quot;);</span>
+	  }
+	
+	public static final String MESSAGE = &quot;Message&quot;;
+	
+	public static final String SUCCESS_MESSAGE = &quot;Payload request is Received&quot;;
+
+	public static final String TEMPLATE_FILE = &quot;template.ini&quot;;
+
+	public static final String JSON_EXT = &quot;.json&quot;;
+
+	public static final String XML_EXT = &quot;.xml&quot;;
+
+	public static final String APPLICATION_JSON = &quot;application/json&quot;;
+	
+	public static final String USER_DIR = &quot;user.dir&quot;;
+
+	public static final String TICKET = &quot;Ticket&quot;;
+	
+	public static final String TICKETHEADER = &quot;TicketHeader&quot;;
+	
+	public static final String EUFT = &quot;EUFT&quot;;
+	
+	public static final String NULL = &quot;null&quot;;
+	
+	
+	public static final String EUFTGROUPNAME = &quot;EUFTGroupName&quot;;
+	
+	public static final String FUNCTIONDESIGNATION = &quot;FunctionDesignation&quot;;
+	
+	public static final String EXTERNALACCESS = &quot;ExternalAccess&quot;;
+	
+	public static final String PRODUCTS = &quot;Products&quot;;
+	
+	public static final String NUMBER = &quot;Number&quot;;
+	
+	public static final String VERSION = &quot;Version&quot;;
+	
+	public static final String CHECKSUM = &quot;Checksum&quot;;
+	
+	public static final String SHA256 = &quot;SHA256&quot;;
+	
+	public static final String MD5 = &quot;MD5&quot;;
+	
+	public static final String ERROR_TICKET = &quot;Faulty notification - payload request has no Ticket&quot;;
+	
+	public static final String ERROR_EUFT_GROUPNAME = &quot;Faulty notification - payload request has no EUFTGroupName&quot;;
+	
+	public static final String ERROR_TICKET_HEADER = &quot;Faulty notification - payload request has no TicketHeader&quot;;
+	
+	public static final String ERROR_EUFT_NO = &quot;Faulty notification - payload request has no EUFT Number&quot;;
+	
+	public static final String ERROR_PRODUCT_NO = &quot;Faulty notification - payload request has no Product Number&quot;;
+	
+	public static final String ERROR_PRODUCT_VERSION = &quot;Faulty notification - payload request has no Product Version&quot;;
+	
+	public static final String ERROR_FUNCTION_DESIGNATION = &quot;Faulty notification - payload request has no FunctionDesignation&quot;;
+	
+	public static final String ERROR_EXTERNAL_ACCESS = &quot;Faulty notification - payload request has no ExternalAccess&quot;;
+	
+	public static final String ERROR_SHA256 = &quot;Faulty notification - payload request has no SHA256&quot;;
+	
+	public static final String ERROR_MD5 = &quot;Faulty notification - payload request has no MD5&quot;;
+	
+	public static final String ERROR_CHECKSUM = &quot;Faulty notification - payload request has no Checksum&quot;;
+	
+	public static final String ERROR_NO_PRODCUTS = &quot;Faulty notification - payload request does not have products&quot;;
+
+	public static final String APPLICATION_XML = &quot;application/xml&quot;;
+
+	public static final String AUTH_BASIC = &quot;Basic &quot;;
+
+	public static final String APPLICATION_URL_ENCODED = &quot;application/x-www-form-urlencoded&quot;;
+
+	public static final String CONTENT_TYPE = &quot;Content-Type&quot;;
+
+	public static final String AUTH_CONTENT = &quot;grant_type=client_credentials&amp;scope=%s/.default&quot;;
+
+	public static final String COLON = &quot;:&quot;;
+
+	public static final String BEARER = &quot;Bearer %s&quot;;
+
+	public static final String TEXT_XML = &quot;text/xml&quot;;
+
+	public static final String AUTHORIZATION = &quot;Authorization&quot;;
+
+	public static final String PULL_PRODUCT_URL = &quot;/pull/pullProduct?&quot;;
+
+	public static final String PRODUCT_NO_EQUAL_TO = &quot;productNumber=&quot;;
+
+	public static final String AMPERSAND = &quot;&amp;&quot;;
+
+	public static final String RSTATE_NO_EQUAL_TO = &quot;rstate=&quot;;
+
+	public static final String TICKET_ID_EQUAL_TO = &quot;ticket=&quot;;
+
+	public static final String EUFT_NO_EQUAL_TO = &quot;euftNumber=&quot;;
+	
+	public static final String BACK_SLASH = &quot;/&quot;;
+	
+	public static final String ACCESS_TOKEN = &quot;access_token&quot;;
+
+	public static final String CHECKSUM_MD5 = &quot;md5&quot;;
+
+	public static final String CHECKSUM_CRC32 = &quot;crc32&quot;;
+
+	public static final String CHECKSUM_SHA1 = &quot;sha1&quot;;
+
+	public static final String CHECKSUM_SHA256 = &quot;sha256&quot;;
+	
+	public static final String TICKET_XML_URL = &quot;/customer/downloadquery?search=ticketxml&quot;;
+	
+	public static final String REF_DOC_URL = &quot;/customer/downloadquery?search=referencedocurls&quot;;
+	
+	public static final String EUFT_EQUAL_TO = &quot;EUFT=&quot;;
+	
+	public static final String EUFT_NUMBER_EQUAL_TO = &quot;euftNumber=&quot;;
+	
+	public static final String TICKET_EQUAL_TO = &quot;Ticket=&quot;;
+	
+	public static final String BASIC_AUTH = &quot;Basic %s&quot;;
+
+	public static final String TRUST_ANCHOR_FILE = &quot;software_gateway_integrity_trust_anchor_a1.pem&quot;;
+	
+	public static final String TRUST_ANCHOR_FILE_URL = &quot;https://www.ericsson.com/49e6e8/assets/content/ceda8a51bc5e4057a6bbbc560035d861/software_gateway_integrity_trust_anchor_a1.pem&quot;;
+
+	public static final String REF_DOC_URLS = &quot;/customer/downloadquery?search=referencedocurls&quot;;
+	
+	public static final int DEFAULT_PORT = 4444;
+	
+	public static final String PRAGMA_HEADER_KEY_VALUE = &quot;akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-true-cache-key,akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-serial-no, akamai-x-get-request-id&quot;;
+	
+	public static final String SIGN_File = &quot;Signature File&quot;;
+	
+	public static final String MANIFEST_File = &quot;Manifest File&quot;;
+	
+	public static final String SMO_File = &quot;SMO Document&quot;;
+	
+	public static final String NMO_File = &quot;NMO Document&quot;;
+	
+	public static final String PRODUCT_BOX_File = &quot;Product Box File&quot;;
+	
+	public static final String TICKET_XML_File = &quot;Ticket XML&quot;;
+	
+	public static final String CLIENT_KEY = &quot;client_key&quot;;
+	
+	public static final String SECRET_KEY = &quot;secret_key&quot;;
+	
+	public static final String SEMI_COLON = &quot;;&quot;;
+	
+	public static final String Euft = &quot;euft&quot;;
+	
+	public static final String ERROR_CLIENT_KEY = &quot;client_key does not exist&quot;;
+	
+	public static final String ERROR_SECRET_KEY = &quot;secret_key does not exist&quot;;
+	
+	public static final String ERROR_EUFT = &quot;euft does not exist and should contain only Digits&quot;;
+	
+	public static final String SCAN_MODE = &quot;scanning&quot;;
+	
+	public static final String SWGW_NOTIFICATION_MODE = &quot;swgw notification&quot;;
+
+	public static final String ADDITIONAL_PROPERTIES = &quot;additional.properties&quot;;
+
+	public static final String READ_SECRETS = &quot;readSecrets.json&quot;;
+	
+	public static final String COMMA = &quot;,&quot;;
+	
+	public static final String EMPTY = &quot;&quot;;
+	
+	public static final String TRUE = &quot;True&quot;;
+	
+	public static final String FALSE = &quot;False&quot;;
+	
+	public static final String RELATIVE_STORAGE_PATH = &quot;Relative_storage_path&quot;;
+	
+	public static final String SPINNAKER_POLLING_ENABLED = &quot;Spinnaker_polling_enabled&quot;;
+	
+	public static final String MANIFEST_SHA256 = &quot;MANIFEST_SHA256&quot;;
+	
+	public static final String MANIFEST_SHA256_EXTN = &quot;.manifest.sha256&quot;;
+	
+	public static final String APPLICATION = &quot;Application&quot;;
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

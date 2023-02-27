@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Mon Feb 27 15:24:20 CET 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0186-9342-8f76-000017f5e800 
+on database directory /opt/app/swgwda/startup/projects/eric-swgwda/data with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@3d4eac69 
+Loaded from file:/home/eswgswg/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+java.vendor=Red Hat, Inc.
+java.runtime.version=11.0.18+10-LTS
+user.dir=/opt/app/swgwda/startup/projects/eric-swgwda
+os.name=Linux
+os.arch=amd64
+os.version=3.10.0-1160.76.1.el7.x86_64
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

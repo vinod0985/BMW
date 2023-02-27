@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Listener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.controller</a> &gt; <span class="el_source">Listener.java</span></div><h1>Listener.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.controller;
+
+/*###################################################################################
+ #  @Name           :   Listener.java
+ #
+ #  @Created        :   Sep Drop 2022
+ #
+ #  @Description    :   To receive webhook payload request from SW Gateway.
+ #
+ #  @Programmer     :   Eswar D
+ #
+ #  @Organization   :   HCL
+ #
+ #  @Release        :   MR2209
+ #
+ #  @History        :
+ #      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+ #      ZDARESW(Eswar)      25-Aug-2022            Implemented webhook reciver
+ ######################################################################################*/
+
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.connector.Connector;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.tomcat.util.descriptor.web.SecurityCollection;
+import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.TriggerContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ericsson.swgw.da.actions.Scanning;
+import com.ericsson.swgw.da.actions.TriggerDownloadNotification;
+import com.ericsson.swgw.da.bean.Webhook;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.database.DerbyDBService;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.services.DASftpConnection;
+import com.ericsson.swgw.da.utils.FileUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+import com.ericsson.swgw.da.validations.PayloadValidation;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.Session;
+
+@SpringBootApplication
+@RestController
+@RequestMapping(&quot;/json&quot;)
+<span class="fc" id="L84">public class Listener {</span>
+	
+	@Autowired(required=true)
+	private Listener listner;
+
+	private static final String NUM_REGEX = &quot;[0-9]+&quot;;
+<span class="fc" id="L90">	private static  Logger logger = LogManager.getLogger(Listener.class);</span>
+<span class="fc" id="L91">	private static int port = Constants.DEFAULT_PORT;</span>
+<span class="fc" id="L92">	private static String distributionMode = getDistributionMode();</span>
+	
+	
+	public static void main(String[] args) {
+		
+<span class="fc" id="L97">		logger = LogManager.getLogger(Listener.class); </span>
+		//System.out.println(&quot;::::::::::::&quot;+System.getenv(distributionMode)+&quot;$$$$$$$$$$$$$$$$$&quot;);
+<span class="pc bpc" id="L99" title="3 of 4 branches missed.">		if(args.length &gt; 0 &amp;&amp; args[0].equalsIgnoreCase(&quot;--debug&quot;)){</span>
+			//logger.setLevel(Level.DEBUG);
+<span class="nc" id="L101">			Configurator.setLevel(logger, Level.DEBUG);</span>
+<span class="nc" id="L102">			Configurator.setRootLevel(Level.DEBUG);</span>
+			
+			/*LoggerContext context = (LoggerContext) LogManager.getContext(false);
+			Configuration config = context.getConfiguration();
+			LoggerConfig rootConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+			rootConfig.setLevel(Level.DEBUG);
+			
+			// This causes all Loggers to refetch information from their LoggerConfig.
+			context.updateLoggers();*/
+			
+<span class="nc" id="L112">			logger.debug(&quot;This statement for debug porpose&quot;);</span>
+		}
+		
+		try {
+<span class="fc" id="L116">			IniConfig iniConfig = new IniConfig();</span>
+<span class="fc" id="L117">			getPortInfo(iniConfig);</span>
+<span class="fc" id="L118">			 distributionMode = getDistributionMode();</span>
+<span class="fc" id="L119">			logger.debug(&quot;.......DA Before creating Template,Test Resorces File.......&quot;);</span>
+<span class="fc" id="L120">			FileUtils.createTemplateFile();</span>
+<span class="fc" id="L121">			FileUtils.createSSLTemplate();</span>
+<span class="fc" id="L122">			FileUtils.createlogs();</span>
+<span class="fc" id="L123">			FileUtils.createTestResorces();</span>
+			//FileUtils.createAnchorFile();
+<span class="fc" id="L125">			logger.debug(&quot;.......DA END creating Template,Test Resorces File......&quot;);</span>
+
+<span class="fc" id="L127">			DerbyDBService.initializeDB();</span>
+			
+<span class="nc" id="L129">		} catch (Exception e) {</span>
+<span class="nc" id="L130">			e.printStackTrace();</span>
+<span class="nc" id="L131">			logger.error(&quot;IOException :::::&quot;+e.getMessage());</span>
+<span class="fc" id="L132">		}</span>
+				
+<span class="fc" id="L134">        SpringApplication.run(Listener.class, args);</span>
+<span class="fc" id="L135">        logger.debug(&quot;This statement for debug porpose&quot;);</span>
+<span class="fc" id="L136">        logger.error(&quot;This ststement for error porpose&quot;);</span>
+<span class="fc" id="L137">        logger.info(&quot;.......DA Application Started.......&quot;);</span>
+<span class="fc" id="L138">        logger.debug(&quot;This statement for debug porpose...............&quot;);</span>
+<span class="fc" id="L139">	}</span>
+	
+<span class="nc" id="L141">	public static class DistributionAgentMode {</span>
+		public static void scanMode(){
+			//if(distributionMode.equalsIgnoreCase(Constants.SCAN_MODE)){
+<span class="fc" id="L144">				logger.info(&quot;Running DA with distribution_method :::&quot;+ distributionMode + &quot; mode&quot; );</span>
+<span class="fc" id="L145">	        	DASftpConnection dasftp = new DASftpConnection();</span>
+<span class="fc" id="L146">	        	ChannelSftp sftpChannel = null;</span>
+<span class="fc" id="L147">	        	Session session = null;</span>
+<span class="fc" id="L148">	        	int millstimeOut = 0;</span>
+	    		try {
+<span class="fc" id="L150">					sftpChannel = dasftp.sftpConnection();</span>
+<span class="fc" id="L151">					Scanning scan = new Scanning(sftpChannel);</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">		    		if(sftpChannel != null){</span>
+<span class="fc" id="L153">		    			String casTimeout = IniConfig.getCascTimeout();</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">		    			if(!StringUtils.isOnlyWhitespaceOrEmpty(casTimeout)){</span>
+<span class="fc" id="L155">		    				millstimeOut = (int) TimeUnit.SECONDS.toMillis(Integer.parseInt(casTimeout));</span>
+		    			}else{
+<span class="nc" id="L157">		    				 millstimeOut = 120000;</span>
+		    			}
+		    			
+<span class="fc" id="L160">		    			sftpChannel.connect(millstimeOut);</span>
+<span class="fc" id="L161">		    			scan.swgwScanOperation();</span>
+<span class="fc" id="L162">		    			session = sftpChannel.getSession();</span>
+		    		}
+<span class="nc" id="L164">				} catch (Exception e) {</span>
+<span class="nc" id="L165">					e.printStackTrace();</span>
+				}finally{
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">					if (sftpChannel != null) {</span>
+<span class="fc" id="L168">						sftpChannel.exit();</span>
+			        }
+<span class="pc bpc" id="L170" title="2 of 4 branches missed.">			        if (session != null &amp;&amp; session.isConnected()) {</span>
+<span class="fc" id="L171">			            session.disconnect();</span>
+			        }
+				}
+			//}
+			
+<span class="fc" id="L176">	}</span>
+
+		public static long getDelay() {
+<span class="fc" id="L179">			String scanInterval = IniConfig.getCascDASscanInterval();</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">			long daScanInterval = (!StringUtils.isOnlyWhitespaceOrEmpty(scanInterval) )? Long.parseLong(scanInterval) : 0;</span>
+<span class="fc" id="L181">			return TimeUnit.MINUTES.toMillis(daScanInterval);</span>
+		}
+	}
+	
+	
+
+
+	/**
+	 * @param loadProperties
+	 */
+	public static String getDistributionMode() {
+<span class="fc" id="L192">		IniConfig iniConfig = new IniConfig();</span>
+<span class="fc" id="L193">		 String daScanInterval = iniConfig.getCascDASscanInterval();</span>
+<span class="fc" id="L194">		 String daMode = &quot;&quot;;</span>
+<span class="pc bpc" id="L195" title="4 of 6 branches missed.">        if (!StringUtils.isOnlyWhitespaceOrEmpty(daScanInterval) &amp;&amp; !daScanInterval.equalsIgnoreCase(&quot;0&quot;) &amp;&amp; !(Constants.NULL).equals(daScanInterval)) {</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">			if (daScanInterval.matches(NUM_REGEX)) {</span>
+<span class="nc" id="L197">				daMode = Constants.SCAN_MODE;</span>
+				} 
+            }else{ 
+<span class="fc" id="L200">            	daMode = Constants.SWGW_NOTIFICATION_MODE;</span>
+        }
+      //  daMode=Constants.SWGW_NOTIFICATION_MODE;
+<span class="fc" id="L203">        System.out.println(&quot;getDistributionMode:::::::::::::&quot;+daMode);</span>
+<span class="fc" id="L204">		return daMode;</span>
+	}
+
+	/**
+	 * @return returns respective response message.
+	 */
+	@ResponseBody
+	@PostMapping(value = &quot;/configure&quot;, consumes = {	MediaType.APPLICATION_JSON_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity&lt;String&gt; setConfigure(
+			@RequestBody Map&lt;String, Object&gt; payload,
+			@RequestHeader(HttpHeaders.CONTENT_TYPE) MediaType contentType) {
+<span class="fc" id="L215">		logger.info(&quot;::::::::::::::::In setConfigure Method:::::::::&quot;);</span>
+		
+<span class="fc" id="L217">		String clientKey =&quot;&quot;;</span>
+<span class="fc" id="L218">		String secretKey =&quot;&quot;;</span>
+		int euft;
+<span class="fc" id="L220">		String message = null;</span>
+<span class="pc bpc" id="L221" title="3 of 6 branches missed.">		if(payload.containsKey(Constants.CLIENT_KEY) &amp;&amp; !(Constants.NULL).equals((payload.get(Constants.CLIENT_KEY))) &amp;&amp; !StringUtils.isOnlyWhitespaceOrEmpty((String) payload.get(Constants.CLIENT_KEY))){</span>
+<span class="fc" id="L222">			clientKey = (String) payload.get(Constants.CLIENT_KEY);</span>
+		} else {
+<span class="nc" id="L224">			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L225">					response(Constants.MESSAGE, Constants.ERROR_CLIENT_KEY));</span>
+		}
+		
+<span class="pc bpc" id="L228" title="3 of 6 branches missed.">		if(payload.containsKey(Constants.SECRET_KEY) &amp;&amp; !(Constants.NULL).equals((payload.get(Constants.SECRET_KEY))) &amp;&amp; !StringUtils.isOnlyWhitespaceOrEmpty((String) payload.get(Constants.SECRET_KEY))){</span>
+<span class="fc" id="L229">			secretKey = (String) payload.get(Constants.SECRET_KEY);</span>
+		}else {
+<span class="nc" id="L231">			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L232">					response(Constants.MESSAGE, Constants.ERROR_SECRET_KEY));</span>
+		}
+<span class="pc bpc" id="L234" title="4 of 8 branches missed.">		if(payload.containsKey(Constants.Euft) &amp;&amp; !(Constants.NULL).equals((payload.get(Constants.Euft))) &amp;&amp; !StringUtils.isOnlyWhitespaceOrEmpty((String) payload.get(Constants.Euft)) &amp;&amp; ((String) payload.get(Constants.Euft)).matches(NUM_REGEX)){</span>
+<span class="fc" id="L235">			euft = Integer.parseInt((String) payload.get(Constants.Euft));</span>
+		} else {
+<span class="nc" id="L237">			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L238">					response(Constants.MESSAGE, Constants.ERROR_EUFT));</span>
+		}
+		
+<span class="fc" id="L241">		logger.debug(&quot;client_key :::::::::::&quot;+clientKey);</span>
+<span class="fc" id="L242">		logger.debug(&quot;euft ::::::::&quot;+euft);</span>
+		/*DBUtils dbUtils = new DBUtils();
+		String message = dbUtils.updateConfig(client_key,secret_key);*/
+		
+		
+		try {
+<span class="fc" id="L248">			DerbyDBService.insertingData(clientKey,secretKey,euft);</span>
+<span class="nc" id="L249">		} catch (SQLException e1) {</span>
+<span class="nc" id="L250">			e1.printStackTrace();</span>
+<span class="nc" id="L251">			message = &quot;The operation was aborted because the euft key value is not a unique one or already exists in the configurations&quot;;</span>
+<span class="fc" id="L252">		}</span>
+<span class="fc" id="L253">		System.out.println(&quot;message :::&quot;+message);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(message)) {</span>
+<span class="nc" id="L255">			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L256">					response(Constants.MESSAGE, message));</span>
+		} else {
+<span class="fc" id="L258">			return ResponseEntity.status(HttpStatus.OK).body(</span>
+<span class="fc" id="L259">				response(Constants.MESSAGE, &quot;setConfigure Sucess&quot;));</span>
+		}
+	}
+	
+	/**
+	 * @return returns respective response message.
+	 */
+	@GetMapping(value = &quot;/getConfig&quot;)
+	public ResponseEntity&lt;String&gt; getConfig(@RequestParam int euft) {
+<span class="fc" id="L268">		logger.info(&quot;::::::::::::::::In getConfig Method:::::::::&quot;);</span>
+		/*Map&lt;String,String&gt; configMap = DBUtils.getConfig();*/
+<span class="fc" id="L270">		Map&lt;String, String&gt; configMap = new HashMap&lt;&gt;();</span>
+		try {
+<span class="fc" id="L272">			configMap = DerbyDBService.getData(euft);</span>
+<span class="nc" id="L273">		} catch (SQLException e) {</span>
+<span class="nc" id="L274">			e.printStackTrace();</span>
+<span class="fc" id="L275">		}</span>
+<span class="fc" id="L276">		return ResponseEntity.status(HttpStatus.OK).body(</span>
+<span class="fc" id="L277">				response(Constants.MESSAGE,configMap.toString()));</span>
+	}
+	
+
+	/**
+	 * @param payload
+	 *            it's stores the payload to the map in the form of Key and
+	 *            Value pairs.
+	 * @param contentType
+	 *            to store the content-type media type from the request.
+	 * @return returns respective response message.
+	 */
+	@ResponseBody
+	@PostMapping(value = &quot;/payload&quot;, consumes = {
+			MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_XML_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity&lt;String&gt; createProduct(
+			@RequestBody Map&lt;String, Object&gt; payload,
+			@RequestHeader(HttpHeaders.CONTENT_TYPE) MediaType contentType) {
+		
+<span class="fc" id="L296">		System.out.println(&quot;:::::::::::::HIIIIIIIII::::::::::::::::::::::&quot;);</span>
+<span class="fc" id="L297">		logger.info(&quot;Received SWGW notification request, starting processing ...&quot;);</span>
+		try {
+<span class="fc" id="L299">			distributionMode =  getDistributionMode();</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">			if(!distributionMode.equalsIgnoreCase(Constants.SWGW_NOTIFICATION_MODE)){</span>
+<span class="nc" id="L301">				String msg = &quot;Running DA with distribution method :::&quot;+ distributionMode + &quot; mode&quot; ;</span>
+<span class="nc" id="L302">				logger.info(msg);</span>
+<span class="nc" id="L303">				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L304">						response(Constants.MESSAGE, msg));</span>
+			}
+<span class="fc" id="L306">			String message = processPayload(payload, contentType);</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">			if(!StringUtils.isOnlyWhitespaceOrEmpty(message)){</span>
+<span class="nc" id="L308">				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(</span>
+<span class="nc" id="L309">						response(Constants.MESSAGE, message));</span>
+			}
+<span class="nc" id="L311">		} catch (Exception e) {</span>
+<span class="nc" id="L312">			e.printStackTrace();</span>
+<span class="nc" id="L313">			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span>
+<span class="nc" id="L314">					.body(response(Constants.MESSAGE, e.getMessage()));</span>
+<span class="fc" id="L315">		}</span>
+<span class="fc" id="L316">		logger.info(&quot;SWGW notification request, Completed ...&quot;);</span>
+<span class="fc" id="L317">		return ResponseEntity.status(HttpStatus.OK).body(</span>
+<span class="fc" id="L318">				response(Constants.MESSAGE, Constants.SUCCESS_MESSAGE));</span>
+	}
+
+	/**
+	 * @param payload
+	 * @param contentType
+	 * @throws Exception
+	 */
+	String processPayload(Map&lt;String, Object&gt; payload,MediaType contentType) throws Exception {
+<span class="fc" id="L327">		logger.debug(&quot;payload::::::::&quot; + payload);</span>
+<span class="fc" id="L328">		logger.info(&quot;format:::::::&quot; + contentType);</span>
+<span class="fc" id="L329">		String storeMultipleFile = IniConfig.getDAStoreMultipleFile();</span>
+<span class="fc" id="L330">		FileUtils.savePayload(payload, contentType, storeMultipleFile);</span>
+<span class="fc" id="L331">		Webhook webhook = new Webhook();</span>
+<span class="fc" id="L332">		String message = PayloadValidation.validatePayload(payload, webhook);</span>
+<span class="fc" id="L333">		logger.info(&quot;message::::::::::&quot; + message);</span>
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(message)) {</span>
+<span class="nc" id="L335">			logger.error(&quot;SWGW notification request, Failed...&quot;+message);</span>
+<span class="nc" id="L336">			return message;</span>
+		} else {
+<span class="fc" id="L338">			logger.info(&quot;Running DA with distribution_method :::&quot;+ distributionMode + &quot; mode&quot; );</span>
+<span class="fc" id="L339">			swgwNotificationMode( webhook);</span>
+<span class="fc" id="L340">			logger.info(&quot;SWG W notification request, Success ...&quot;);			</span>
+		}
+<span class="fc" id="L342">		return &quot;&quot;;</span>
+	}
+
+	
+
+	public static void swgwNotificationMode(Webhook webhook) {
+<span class="fc" id="L348">		new Thread() {</span>
+			@Override
+			public void run() {
+				try {
+					//String wEuft = webhook.getEuft();
+					//configureSecrects(wEuft);
+<span class="fc" id="L354">					TriggerDownloadNotification.swgwTriggerServices(webhook);</span>
+<span class="fc" id="L355">					logger.info(&quot;......./End Of DA run&quot;);</span>
+<span class="nc" id="L356">				} catch (Exception e) {</span>
+<span class="nc" id="L357">					e.printStackTrace();</span>
+<span class="fc" id="L358">				}</span>
+<span class="fc" id="L359">			}</span>
+<span class="fc" id="L360">		}.start();</span>
+<span class="fc" id="L361">	}</span>
+
+	/**
+	 * @param euft
+	 * @return
+	 * @throws SQLException
+	 */
+	@SuppressWarnings(&quot;rawtypes&quot;)
+	private static Map getSecrects(String euft) throws SQLException {
+<span class="fc" id="L370">        Map&lt;String, String&gt; configMap = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">        if (!StringUtils.isOnlyWhitespaceOrEmpty(euft)) {</span>
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">            if (euft.matches(NUM_REGEX)) {</span>
+<span class="fc" id="L373">                configMap = DerbyDBService.getData(Integer.parseInt(euft));</span>
+            }
+        }
+<span class="fc" id="L376">		return configMap;</span>
+    }
+	
+	/**
+	 * @param loadProperties
+	 * @param wEuft
+	 * @throws SQLException
+	 */
+	public void configureSecrects(String wEuft) throws SQLException {
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L386">		Map&lt;String, String&gt; configureSecrects = getSecrects(wEuft);</span>
+<span class="fc" id="L387">		String clientKey = configureSecrects.get(Constants.CLIENT_KEY);</span>
+<span class="fc" id="L388">		String secretKey = configureSecrects.get(Constants.SECRET_KEY);</span>
+<span class="fc" id="L389">		IniConfig.setSwgwClientKey(clientKey);</span>
+<span class="fc" id="L390">		IniConfig.setSwgwSecretKey(secretKey);</span>
+<span class="fc" id="L391">	}</span>
+
+	/**
+	 * @param strResponseKey
+	 *            to store response key
+	 * @param strResponseValue
+	 *            to store response message value
+	 * @return return response in the form of map
+	 */
+    public String response(String strResponseKey, String strResponseValue) {
+<span class="fc" id="L401">		com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();</span>
+<span class="fc" id="L402">		Map&lt;String, String&gt; responseMap = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L403">		responseMap.put(strResponseKey, strResponseValue);</span>
+<span class="fc" id="L404">		String response = null;</span>
+		try {
+<span class="fc" id="L406">			response = mapper.writerWithDefaultPrettyPrinter()</span>
+<span class="fc" id="L407">					.writeValueAsString(responseMap);</span>
+<span class="nc" id="L408">		} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L409">			e.printStackTrace();</span>
+<span class="fc" id="L410">		}</span>
+<span class="fc" id="L411">		return response;</span>
+	}
+	
+	public static void getPortInfo(IniConfig iniConfig){
+<span class="fc" id="L415">		  String propertyPort = iniConfig.getDAServerPort();</span>
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">          if (!StringUtils.isOnlyWhitespaceOrEmpty(propertyPort)) {</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">              if (propertyPort.matches(NUM_REGEX)) {</span>
+<span class="fc" id="L418">                  int serverPort = Integer.parseInt(propertyPort);</span>
+<span class="fc" id="L419">                  port = serverPort;</span>
+              } 
+          }
+<span class="fc" id="L422">	}</span>
+	
+	
+	@Component
+<span class="fc" id="L426">    public class CustomPort implements</span>
+            WebServerFactoryCustomizer&lt;ConfigurableServletWebServerFactory&gt; {
+        @Override
+        public void customize(ConfigurableServletWebServerFactory server) {
+<span class="fc" id="L430">        	server.setPort(port);</span>
+<span class="fc" id="L431">        }</span>
+    }
+
+	
+	/*
+	 * @Bean public ServletWebServerFactory servletContainer() {
+	 * TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+	 * protected void postProcessContext(Context context) { SecurityConstraint
+	 * securityConstraint = new SecurityConstraint();
+	 * securityConstraint.setUserConstraint(&quot;CONFIDENTIAL&quot;); SecurityCollection
+	 * collection = new SecurityCollection(); collection.addPattern(&quot;/*&quot;);
+	 * securityConstraint.addCollection(collection);
+	 * context.addConstraint(securityConstraint); } };
+	 * tomcat.addAdditionalTomcatConnectors(redirectConnector()); return tomcat; }
+	 * 
+	 * // Custom Connector - redirecting http (8080) request to to https (8443)
+	 * private Connector redirectConnector() {
+	 * 
+	 * System.out.println(&quot;port :::::::::::::&quot;+port); Connector connector = new
+	 * Connector(&quot;org.apache.coyote.http11.Http11NioProtocol&quot;);
+	 * connector.setScheme(&quot;http&quot;); connector.setPort(0);
+	 * connector.setSecure(false); connector.setRedirectPort(port);
+	 * 
+	 * return connector; }
+	 */
+	
+	@Configuration
+	@EnableScheduling
+<span class="fc" id="L459">	public class DynamicSchedulingConfig implements SchedulingConfigurer {</span>
+	    @Bean
+	    public Executor taskExecutor() {
+<span class="fc" id="L462">	        return Executors.newSingleThreadScheduledExecutor();</span>
+	    }
+
+	    @Override
+	    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+<span class="fc" id="L467">	        taskRegistrar.setScheduler(taskExecutor());</span>
+<span class="fc" id="L468">	        taskRegistrar.addTriggerTask(</span>
+<span class="fc" id="L469">	          new Runnable() {</span>
+	              @Override
+	              public void run() {
+<span class="fc" id="L472">	            	  DistributionAgentMode.scanMode();</span>
+<span class="fc" id="L473">	              }</span>
+	          },
+<span class="fc" id="L475">	          new Trigger() {</span>
+	              @Override
+	              public Date nextExecutionTime(TriggerContext context) {
+<span class="fc" id="L478">	                  Optional&lt;Date&gt; lastCompletionTime =</span>
+<span class="fc" id="L479">	                    Optional.ofNullable(context.lastCompletionTime());</span>
+<span class="fc" id="L480">	                  Instant nextExecutionTime =</span>
+<span class="fc" id="L481">	                    lastCompletionTime.orElseGet(Date::new).toInstant()</span>
+<span class="fc" id="L482">	                      .plusMillis(DistributionAgentMode.getDelay());</span>
+<span class="fc" id="L483">	                  return Date.from(nextExecutionTime);</span>
+	              }
+	          }
+	        );
+<span class="fc" id="L487">	    }</span>
+	  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

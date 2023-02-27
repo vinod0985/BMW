@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Ticket>
+    <TicketID>T-104158</TicketID>
+    <Header>test-1</Header>
+    <Description></Description>
+    <Boxes>
+        <Box>
+            <ProductNumber>CXC20127</ProductNumber>
+            <RState>1.0.1</RState>
+            <TypeOfProduct>Product Box</TypeOfProduct>
+            <Description></Description>
+            <FileSize>3272596</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>Demo Product</FunctionDesignation>
+            <MD5>a29224d615cd1ab680134856d878af34</MD5>
+            <SHA256>6bcdd0c2339be04dbbe3ad10de73b991c721d9151ba49901f4e6d9eaa4a09c11</SHA256>
+            <Filename>CXC20127-1.0.1.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>190 89-NMS/CXP 902 0621-06</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>NMS_document.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>UEN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.doc</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>UEN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0621/2U</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_startTesting.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>UEN</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+    </Boxes>
+</Ticket>

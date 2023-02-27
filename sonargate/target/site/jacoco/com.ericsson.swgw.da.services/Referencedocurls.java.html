@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Referencedocurls.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.services</a> &gt; <span class="el_source">Referencedocurls.java</span></div><h1>Referencedocurls.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.services;
+
+/*###################################################################################
+#  @Name           :   Referencedocurls.java
+#
+#  @Created        :   
+#
+#  @Description    :   
+#
+#  @Programmer     :  
+#
+#  @Organization   :   
+#
+#  @History        :
+#
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   Description
+#
+#
+####################################################################################*/
+
+import java.io.File;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+
+import com.ericsson.swgw.da.bean.Webhook;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.swgw.bean.SWGReferenceDocs;
+import com.ericsson.swgw.da.utils.PullUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+
+
+public class Referencedocurls {
+	
+<span class="fc" id="L44">	private static  Logger logger = LogManager.getLogger(Referencedocurls.class);</span>
+	public static Webhook webhook;
+<span class="fc" id="L46">	private static final String currentDirectory = System.getProperty(Constants.USER_DIR);</span>
+	
+<span class="fc" id="L48">	public Referencedocurls(Webhook lWebhook) {</span>
+<span class="fc" id="L49">		webhook = lWebhook;</span>
+<span class="fc" id="L50">	}</span>
+	
+	
+	/**
+	 * @param sbearerToken
+	 * @param string
+	 * @param filePath
+	 * @throws SQLException 
+	 * @throws JSONException 
+	 * @throws JAXBException 
+	 */
+
+	public SWGReferenceDocs getRefdocurls(String apiUrl, String productNumber,String productVersion) throws JSONException, SQLException, JAXBException{
+<span class="fc" id="L63">		logger.debug(&quot;productNumber ::::&quot;+productNumber);</span>
+<span class="fc" id="L64">		logger.debug(&quot;productVersion ::::&quot;+productVersion);</span>
+<span class="fc" id="L65">		String refDocURL = getRefDocURL(apiUrl, productNumber, productVersion);</span>
+<span class="fc" id="L66">		logger.debug(&quot;refDocURL:::::::::&quot;+refDocURL);</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(refDocURL)) {</span>
+<span class="fc" id="L68">			String sFileName = getTempFileName();</span>
+<span class="fc" id="L69">			String sLogsPath = getLogsPath();			</span>
+			
+<span class="fc" id="L71">			Map&lt;String, Object&gt; returnMap = PullUtils.pullMethod(refDocURL,sFileName ,sLogsPath);</span>
+<span class="fc" id="L72">			System.out.println(&quot;downloadDir::::::::::::::&quot;+sLogsPath);</span>
+<span class="fc" id="L73">			java.io.File file =  null;</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">			if(returnMap.containsKey(&quot;file&quot;)){</span>
+<span class="fc" id="L75">				file = (File) returnMap.get(&quot;file&quot;);</span>
+			}else {
+<span class="nc" id="L77">				file = new java.io.File(sLogsPath + Constants.BACK_SLASH+ sFileName);</span>
+			}
+			
+<span class="fc" id="L80">			System.out.println(&quot;getRefdocurls getAbsolutePath() ::::&quot;+file.getAbsolutePath());</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">			if(file.exists()){</span>
+<span class="fc" id="L82">				SWGReferenceDocs refDocXML = null;</span>
+				try{
+<span class="fc" id="L84">					refDocXML = collectInputAndSaveAsXMLObject(file);</span>
+<span class="nc" id="L85">				}catch (Exception e) {</span>
+<span class="nc" id="L86">					e.printStackTrace();</span>
+				} finally {
+<span class="fc" id="L88">					file.delete();</span>
+				}
+				
+<span class="fc" id="L91">				return refDocXML;</span>
+			}else {
+<span class="nc" id="L93">				return null;</span>
+				//logger.error(&quot;Ticket XML Not found in the temporary location ::&quot; + logsPath + Constants.BACK_SLASH + fileName );
+			}	
+		}				
+<span class="nc" id="L97">		return null;	</span>
+	}
+	
+	private SWGReferenceDocs collectInputAndSaveAsXMLObject(File file) throws JAXBException {
+<span class="fc" id="L101">			JAXBContext jaxbContext1 = JAXBContext.newInstance(SWGReferenceDocs.class);</span>
+<span class="fc" id="L102">			Unmarshaller jaxbUnmarshaller = jaxbContext1.createUnmarshaller();</span>
+<span class="fc" id="L103">			SWGReferenceDocs refDocXML = (SWGReferenceDocs) jaxbUnmarshaller.unmarshal(file);</span>
+<span class="fc" id="L104">			return refDocXML;</span>
+	}
+
+
+	public String getRefDocURL(String apiUrl,String productNumber,String productVersion) {
+		
+		
+<span class="fc" id="L111">		StringBuilder refDocBuilder = new StringBuilder();</span>
+<span class="fc" id="L112">		refDocBuilder.append(apiUrl);</span>
+<span class="fc" id="L113">		refDocBuilder.append(Constants.REF_DOC_URL);</span>
+<span class="fc" id="L114">		refDocBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L115">		refDocBuilder.append(Constants.PRODUCT_NO_EQUAL_TO);</span>
+<span class="fc" id="L116">		refDocBuilder.append(productNumber);</span>
+<span class="fc" id="L117">		refDocBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L118">		refDocBuilder.append(Constants.RSTATE_NO_EQUAL_TO);</span>
+<span class="fc" id="L119">		refDocBuilder.append(productVersion);</span>
+<span class="fc" id="L120">		refDocBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L121">		refDocBuilder.append(Constants.EUFT_NUMBER_EQUAL_TO);</span>
+<span class="fc" id="L122">		refDocBuilder.append( webhook.getEuft());</span>
+<span class="fc" id="L123">		refDocBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L124">		refDocBuilder.append(Constants.TICKET_ID_EQUAL_TO);</span>
+<span class="fc" id="L125">		refDocBuilder.append(webhook.getTicket());</span>
+
+<span class="fc" id="L127">		return refDocBuilder.toString();</span>
+	}
+	
+	private static String getTempFileName() {
+<span class="fc" id="L131">		Timestamp timestamp = new Timestamp(System.currentTimeMillis());</span>
+<span class="fc" id="L132">		Long lTimeStamp = timestamp.getTime();</span>
+		
+<span class="fc" id="L134">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L135">		sb.append(&quot;ReferenceDoc&quot;);</span>
+<span class="fc" id="L136">		sb.append(&quot;_&quot;);		</span>
+<span class="fc" id="L137">		sb.append(lTimeStamp.toString());</span>
+<span class="fc" id="L138">		sb.append(Constants.XML_EXT);</span>
+		
+<span class="fc" id="L140">		logger.debug(&quot;TempFileName::::::::::::::&quot;+sb.toString());</span>
+<span class="fc" id="L141">		return sb.toString();</span>
+	}
+
+	public static String getLogsPath(){
+<span class="fc" id="L145">		return currentDirectory + Constants.BACK_SLASH + &quot;logs&quot;;</span>
+		
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

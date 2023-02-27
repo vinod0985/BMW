@@ -1,0 +1,65 @@
+apiVersion: v1
+data:
+  template.ini: |
+    [defaultAttributes]
+    products = {{ .Values.defaultAttributes.products }}
+
+    [product_a]
+    sw_product_no = {{ .Values.product_a.sw_product_no }}
+    release_note_no = {{ .Values.product_a.release_note_no }}
+    product_header = {{ .Values.product_a.product_header }}
+    webhook = {{ .Values.product_a.webhook }}
+
+    [product_b]
+    sw_product_no = {{ .Values.product_b.sw_product_no }}
+    release_note_no = {{ .Values.product_b.release_note_no }}
+    product_header = {{ .Values.product_b.product_header }}
+    webhook = {{ .Values.product_b.webhook }}
+
+    [casc]
+    ip = {{ .Values.casc.ip }}
+    username = {{ .Values.casc.username }}
+    password = {{ .Values.casc.password }}
+    download_dir = {{ .Values.casc.download_dir }}
+    timeout = {{ .Values.casc.timeout }}
+    port = {{ .Values.casc.port }}
+
+    [spinnaker]
+    ip = {{ .Values.spinnaker.ip }}
+    port = {{ .Values.spinnaker.port }}
+    url = {{ .Values.spinnaker.url }}
+    username = {{ .Values.spinnaker.username }}
+    password = {{ .Values.spinnaker.password }}
+    webhook_service = {{ .Values.spinnaker.webhook_service }}
+
+    [swgw]
+    connect_timeout = {{ .Values.swgw.connect_timeout }}
+    read_timeout = {{ .Values.swgw.read_timeout }}
+    retries = {{ .Values.swgw.retries }}
+    base_url = {{ .Values.swgw.base_url }}
+    api_url = {{ .Values.swgw.api_url }}
+    client_key = {{ .Values.swgw.client_key }}
+    secret_key = {{ .Values.swgw.secret_key }}
+    download_dir = {{ .Values.swgw.download_dir }}
+    euft = {{ .Values.swgw.euft }}
+
+    [distributionAgent]
+    server_port = {{ .Values.distributionAgent.server_port }}
+    destination_dir = {{ .Values.distributionAgent.destination_dir }}
+    destination_ip = {{ .Values.distributionAgent.destination_ip }}
+    destination_port = {{ .Values.distributionAgent.destination_port }}
+    destination_username = {{ .Values.distributionAgent.destination_username }}
+    destination_password = {{ .Values.distributionAgent.destination_password }}
+    type_of_storage = {{ .Values.distributionAgent.type_of_storage }}
+    verify_products = {{ .Values.distributionAgent.verify_products }}
+    download_only = {{ .Values.distributionAgent.download_only }}
+    download_entire_ticket = {{ .Values.distributionAgent.download_entire_ticket }}
+
+    [dms]
+    url = {{ .Values.dms.url }}
+    username = {{ .Values.dms.username }}
+    password = {{ .Values.dms.password }}
+    TypeOfAPI = {{ .Values.dms.TypeOfAPI }}
+kind: ConfigMap
+metadata:
+  name: {{ include "eric-swgwda.fullname" . }}-config-map

@@ -1,0 +1,6 @@
+projectKey=com.ericsson.swgw.da:eric-swgwda
+serverUrl=http://localhost:9000
+serverVersion=7.6.0.21501
+dashboardUrl=http://localhost:9000/dashboard?id=com.ericsson.swgw.da%3Aeric-swgwda
+ceTaskId=AYZ0NGdt712vQURqCIZp
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AYZ0NGdt712vQURqCIZp

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignatureValidation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.validations</a> &gt; <span class="el_source">SignatureValidation.java</span></div><h1>SignatureValidation.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.validations;
+
+/*###################################################################################
+#  @Name           :   SignatureValidation.java
+#
+#  @Created        :   Oct Drop 2022
+#
+#  @Description    :   To validate Signature files with trust_anchor key for  packages download from SW Gateway
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2210
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      21-Sept-2022            validate signature files form the packages download from SW Gateway
+######################################################################################*/
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.exception.SignatureValidationException;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+public class SignatureValidation {
+	private static final String SPACE = &quot; &quot;;
+
+<span class="fc" id="L37">	private static  Logger logger = LogManager.getLogger(SignatureValidation.class);</span>
+<span class="nc" id="L38">	private SignatureValidation() {</span>
+<span class="nc" id="L39">	    throw new IllegalStateException(&quot;Validation class&quot;);</span>
+	  }
+<span class="fc" id="L41">	private static String currentDirectory = System</span>
+<span class="fc" id="L42">			.getProperty(Constants.USER_DIR);</span>
+	public static String validateOpenSSL() {
+<span class="fc" id="L44">		String strResult = &quot;&quot;;</span>
+<span class="fc" id="L45">		String strcommandErrorResult = &quot;&quot;;</span>
+		try {
+
+<span class="fc" id="L48">			boolean isWindows = System.getProperty(&quot;os.name&quot;).toLowerCase()</span>
+<span class="fc" id="L49">					.startsWith(&quot;windows&quot;);</span>
+			//String command = &quot;&quot;;
+<span class="fc" id="L51">			String[] command = new String[4];</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">			if (isWindows) {</span>
+<span class="nc" id="L53">				command[0] = &quot;cmd.exe&quot;;</span>
+<span class="nc" id="L54">				command[1] = &quot;/c&quot;;</span>
+<span class="nc" id="L55">				command[2] = &quot;openssl version&quot;;</span>
+<span class="nc" id="L56">				command[3] = &quot;;&quot;;</span>
+			} else {
+<span class="fc" id="L58">				command[0] = &quot;sh&quot;;</span>
+<span class="fc" id="L59">				command[1] = &quot;-c&quot;;</span>
+<span class="fc" id="L60">				command[2] = &quot;openssl version&quot;;</span>
+<span class="fc" id="L61">				command[3] = &quot;;&quot;;</span>
+				//command = &quot;openssl version&quot;;
+			}
+
+			Process process;
+			// String command = &quot;help PATH&quot;;
+			// String command = &quot;java -version&quot;;
+<span class="fc" id="L68">			Runtime r = Runtime.getRuntime();</span>
+<span class="fc" id="L69">			logger.info(&quot;before validate OpenSSL  exec :::&quot;+Arrays.toString(command));</span>
+<span class="fc" id="L70">			process = r.exec(command);</span>
+<span class="fc" id="L71">			logger.debug(&quot;process :::&quot;+process);</span>
+<span class="fc" id="L72">			BufferedReader commandResult = new BufferedReader(</span>
+<span class="fc" id="L73">					new InputStreamReader(process.getInputStream()));</span>
+<span class="fc" id="L74">			BufferedReader commandError = new BufferedReader(</span>
+<span class="fc" id="L75">					new InputStreamReader(process.getErrorStream()));</span>
+			
+<span class="fc" id="L77">			strResult = commandResult.readLine();</span>
+			
+<span class="fc" id="L79">			logger.info(&quot;commandResult readLine()   ::::&quot;</span>
+					+ strResult);
+			
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">			while ((strResult = commandResult.readLine()) != null) {</span>
+				try {
+<span class="nc" id="L84">					logger.debug(&quot;strResult  ::::&quot; + strResult);</span>
+<span class="nc" id="L85">				} catch (Exception ex) {</span>
+					// Not required: Kept to skip the row
+<span class="nc" id="L87">				}</span>
+			}
+
+<span class="fc" id="L90">			strcommandErrorResult = commandError.readLine();</span>
+<span class="fc" id="L91">			logger.info(&quot;commandError readLine   ::::&quot;</span>
+					+ strcommandErrorResult);
+			
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">			while ((strcommandErrorResult = commandError.readLine()) != null) {</span>
+				try {
+<span class="nc" id="L96">					logger.error(&quot;strcommandErrorResult  ::::&quot;</span>
+							+ strcommandErrorResult);
+<span class="nc" id="L98">				} catch (Exception ex) {</span>
+					// Not required: Kept to skip the row
+<span class="nc" id="L100">				}</span>
+			}
+<span class="fc" id="L102">			process.destroy();</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">			if (process.isAlive()) {</span>
+<span class="nc" id="L104">				process.destroyForcibly();</span>
+			}
+<span class="nc" id="L106">		} catch (IOException e) {</span>
+<span class="nc" id="L107">			e.printStackTrace();</span>
+<span class="fc" id="L108">		}</span>
+<span class="fc" id="L109">		return strcommandErrorResult;</span>
+	}
+	
+	public static boolean boxSignatureValidation(String signatureFile, String manifestFile) throws SignatureValidationException, IOException {
+<span class="fc" id="L113">		boolean isSignsuccess = false;</span>
+<span class="fc" id="L114">		String validateOpenSSL = validateOpenSSL();</span>
+<span class="fc" id="L115">		logger.debug(&quot;==========validateOpenSSL===========&quot;+validateOpenSSL);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">		if(!StringUtils.isOnlyWhitespaceOrEmpty(validateOpenSSL)){</span>
+<span class="nc" id="L117">			throw new SignatureValidationException(&quot;couldn't find openssl installed in the DA execution server&quot;);</span>
+		}else{
+<span class="fc" id="L119">			File anchorfile = new File(currentDirectory + Constants.BACK_SLASH +Constants.TRUST_ANCHOR_FILE);</span>
+<span class="fc" id="L120">			signatureFile = &quot;\&quot;&quot; +signatureFile + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L121">			manifestFile = &quot;\&quot;&quot; +manifestFile + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L122">			String sAnchorFile = &quot;\&quot;&quot; +anchorfile.getAbsolutePath() + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L123">			StringBuilder sigBuilder = new StringBuilder();</span>
+<span class="fc" id="L124">			sigBuilder.append(&quot;openssl&quot;);</span>
+<span class="fc" id="L125">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L126">			sigBuilder.append(&quot;cms&quot;);</span>
+<span class="fc" id="L127">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L128">			sigBuilder.append(&quot;-verify&quot;);</span>
+<span class="fc" id="L129">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L130">			sigBuilder.append(&quot;-in&quot;);</span>
+<span class="fc" id="L131">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L132">			sigBuilder.append(signatureFile);</span>
+<span class="fc" id="L133">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L134">			sigBuilder.append(&quot;-binary&quot;);</span>
+<span class="fc" id="L135">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L136">			sigBuilder.append(&quot;-inform&quot;);</span>
+<span class="fc" id="L137">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L138">			sigBuilder.append(&quot;der&quot;);</span>
+<span class="fc" id="L139">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L140">			sigBuilder.append(&quot;-content&quot;);</span>
+<span class="fc" id="L141">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L142">			sigBuilder.append(manifestFile);</span>
+<span class="fc" id="L143">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L144">			sigBuilder.append(&quot;-CAfile&quot;);</span>
+<span class="fc" id="L145">			sigBuilder.append(SPACE);</span>
+<span class="fc" id="L146">			sigBuilder.append(sAnchorFile);</span>
+<span class="fc" id="L147">			String sigCommand = sigBuilder.toString();</span>
+<span class="fc" id="L148">			logger.debug(&quot;===============Signature command=========&quot;+sigCommand);</span>
+<span class="fc" id="L149">			boolean isWindows = System.getProperty(&quot;os.name&quot;).toLowerCase()</span>
+<span class="fc" id="L150">					.startsWith(&quot;windows&quot;);</span>
+<span class="fc" id="L151">			 String[] command = new String[4];</span>
+			//String command = &quot;&quot;;
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">			if (isWindows) {</span>
+<span class="nc" id="L154">				command[0] = &quot;cmd.exe&quot;;</span>
+<span class="nc" id="L155">				command[1] = &quot;/c&quot;;</span>
+			} else {
+<span class="fc" id="L157">				command[0] = &quot;sh&quot;;</span>
+<span class="fc" id="L158">				command[1] = &quot;-c&quot;;</span>
+				//command = sigCommand;
+			}
+<span class="fc" id="L161">			command[2] = sigCommand;</span>
+<span class="fc" id="L162">			command[3] = &quot;;&quot;;</span>
+<span class="fc" id="L163">			System.out.println(&quot;command :::&quot;+Arrays.toString(command));</span>
+			Process process;
+<span class="fc" id="L165">			Runtime r = Runtime.getRuntime();</span>
+<span class="fc" id="L166">			System.out.println(&quot;before exec :::&quot;);</span>
+<span class="fc" id="L167">			process = r.exec(command);</span>
+
+<span class="fc" id="L169">			BufferedReader commandResult = new BufferedReader(</span>
+<span class="fc" id="L170">					new InputStreamReader(process.getInputStream()));</span>
+<span class="fc" id="L171">			BufferedReader commandError = new BufferedReader(</span>
+<span class="fc" id="L172">					new InputStreamReader(process.getErrorStream()));</span>
+
+<span class="fc" id="L174">			logger.debug(&quot;commandResult readLine()   ::::&quot;</span>
+<span class="fc" id="L175">					+ commandResult.readLine());</span>
+<span class="fc" id="L176">			String strResult=&quot;&quot;;</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">			while ((strResult = commandResult.readLine()) != null) {</span>
+				try {
+<span class="fc" id="L179">					logger.debug(&quot;strResult  ::::&quot; + strResult);</span>
+<span class="nc" id="L180">				} catch (Exception ex) {</span>
+					// Not required: Kept to skip the row
+<span class="pc" id="L182">				}</span>
+			}
+
+<span class="fc" id="L185">			logger.debug(&quot;commandError readLine   ::::&quot;</span>
+<span class="fc" id="L186">					+ commandError.readLine());</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">			if(StringUtils.isOnlyWhitespaceOrEmpty(commandError.readLine())){</span>
+<span class="fc" id="L188">				isSignsuccess = true;</span>
+			}
+			String strcommandErrorResult;
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">			while ((strcommandErrorResult = commandError.readLine()) != null) {</span>
+				try {
+<span class="nc" id="L193">					logger.error(&quot;strcommandErrorResult  ::::&quot;</span>
+							+ strcommandErrorResult);
+<span class="nc" id="L195">				} catch (Exception ex) {</span>
+					// Not required: Kept to skip the row
+<span class="nc" id="L197">				}</span>
+			}
+<span class="fc" id="L199">			process.destroy();</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">			if (process.isAlive()) {</span>
+<span class="fc" id="L201">				process.destroyForcibly();</span>
+			}
+		}
+<span class="fc" id="L204">		return isSignsuccess;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

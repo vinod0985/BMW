@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileTransfer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.actions</a> &gt; <span class="el_source">FileTransfer.java</span></div><h1>FileTransfer.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.actions;
+
+/*###################################################################################
+#  @Name           :   Checksum.java
+#
+#  @Created        :   Nov Drop 2022
+#
+#  @Description    :   To transfer files to destination storage 
+#
+#  @Programmer     :   Santosh K
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2211
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      3-Nov-2022            created for file transfer to destination storage 
+######################################################################################*/
+
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import io.minio.SetBucketPolicyArgs;
+import io.minio.UploadObjectArgs;
+import io.minio.errors.MinioException;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.services.DASftpConnection;
+import com.ericsson.swgw.da.utils.StringUtils;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+
+public class FileTransfer {
+
+<span class="nc" id="L47">	public static String bucketName = &quot;my-bucketname&quot;;</span>
+<span class="nc" id="L48">	public static String ACCESS_KEY = IniConfig.getDAAccessKey();</span>
+<span class="nc" id="L49">	public static String SECRET_KEY = IniConfig.getDASecretKey();</span>
+
+	private static MinioClient minioClient;
+
+	private static ChannelSftp sftpChannel;
+
+<span class="nc" id="L55">	private static  Logger logger = LogManager.getLogger(FileTransfer.class);</span>
+
+<span class="nc" id="L57">	private FileTransfer(ChannelSftp scSftpChannel) {</span>
+<span class="nc" id="L58">		sftpChannel= scSftpChannel;</span>
+
+<span class="nc" id="L60">	}</span>
+	private static final String FALSE = &quot;false&quot;;
+
+	public static Boolean isDownloadOnly(){
+<span class="nc" id="L64">		Boolean bReturn = false;</span>
+<span class="nc" id="L65">		String sDownloadOnly = IniConfig.getDADownloadOnly();</span>
+<span class="nc" id="L66">		logger.info(&quot;sDownloadOnly is &quot;+ sDownloadOnly);</span>
+<span class="nc bnc" id="L67" title="All 4 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(sDownloadOnly) &amp;&amp; FALSE.equalsIgnoreCase(sDownloadOnly)) {</span>
+<span class="nc" id="L68">			logger.info(&quot;Download only is not specified in DA configurations. Hence proceed for file transfer&quot;);</span>
+<span class="nc" id="L69">			bReturn = true;</span>
+		} else {
+<span class="nc" id="L71">			logger.info(&quot;Download only was specified in DA configurations&quot;);</span>
+		}        
+<span class="nc" id="L73">		return bReturn;    </span>
+	}
+
+	public static List&lt;File&gt; transferFiles(List&lt;File&gt; successFiles) throws MinioException , JSchException{
+<span class="nc" id="L77">		List&lt;File&gt; transferedFiles = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		if(successFiles.isEmpty()){</span>
+<span class="nc" id="L79">			return Collections.emptyList();</span>
+		}
+<span class="nc" id="L81">		String daStorageType = IniConfig.getDAStorageType();</span>
+<span class="nc" id="L82">		String daDestIP = IniConfig.getDADestIP();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">		if(daStorageType.equalsIgnoreCase(&quot;minio&quot;)){</span>
+			try{
+				minioClient =
+<span class="nc" id="L86">						MinioClient.builder()</span>
+<span class="nc" id="L87">						.endpoint(daDestIP)</span>
+<span class="nc" id="L88">						.credentials(ACCESS_KEY, SECRET_KEY)</span>
+<span class="nc" id="L89">						.build();</span>
+<span class="nc" id="L90">				boolean found = </span>
+<span class="nc" id="L91">						minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">				if (found) {</span>
+<span class="nc" id="L93">					minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());</span>
+<span class="nc" id="L94">					logger.info(bucketName +&quot; exists&quot;);</span>
+<span class="nc" id="L95">					String readAndWritePolicy = &quot;json:{}&quot;;</span>
+<span class="nc" id="L96">					minioClient.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(bucketName).config(readAndWritePolicy).build());</span>
+<span class="nc" id="L97">					minioFileTransfer(successFiles);</span>
+
+<span class="nc" id="L99">				} else {</span>
+<span class="nc" id="L100">					logger.info(bucketName +&quot; does not exist&quot;);</span>
+				}
+<span class="nc" id="L102">			}catch (MinioException e) {</span>
+<span class="nc" id="L103">				logger.info(&quot;Error occurred: &quot; + e);</span>
+<span class="nc" id="L104">				logger.info(&quot;HTTP trace: &quot; + e.httpTrace());</span>
+<span class="nc" id="L105">			} catch (Exception e) {</span>
+<span class="nc" id="L106">				e.printStackTrace();</span>
+<span class="nc" id="L107">			}</span>
+		}else{
+<span class="nc" id="L109">			DASftpConnection dasftp = new DASftpConnection();</span>
+<span class="nc" id="L110">			Session session = null;</span>
+<span class="nc" id="L111">			String sourceDir = IniConfig.getSwgwDownloadDir();</span>
+<span class="nc" id="L112">			String remoteDir = IniConfig.getDADestDir();</span>
+			try {
+<span class="nc" id="L114">				sftpChannel = dasftp.sftp_Connection();	</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">				if(sftpChannel!=null){</span>
+<span class="nc" id="L116">					transferedFiles = sftpFileTransfer(sftpChannel,successFiles,sourceDir,remoteDir);</span>
+<span class="nc" id="L117">					session = sftpChannel.getSession();</span>
+				}
+<span class="nc" id="L119">			} catch (JSchException e) {</span>
+<span class="nc" id="L120">				e.printStackTrace();</span>
+			}finally{
+<span class="nc bnc" id="L122" title="All 2 branches missed.">				if (sftpChannel != null) {</span>
+<span class="nc" id="L123">					sftpChannel.exit();</span>
+				}
+<span class="nc bnc" id="L125" title="All 4 branches missed.">				if (session != null &amp;&amp; session.isConnected()) {</span>
+<span class="nc" id="L126">					session.disconnect();</span>
+				}
+			}
+		}
+<span class="nc" id="L130">		return transferedFiles;</span>
+	}
+	public static void minioFileTransfer(List&lt;File&gt; files) throws Exception{
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		for(File file : files){</span>
+<span class="nc" id="L134">			String fileName = file.getName();</span>
+<span class="nc" id="L135">			minioClient.uploadObject(</span>
+<span class="nc" id="L136">					UploadObjectArgs.builder()</span>
+<span class="nc" id="L137">					.bucket(bucketName)</span>
+<span class="nc" id="L138">					.object(fileName)</span>
+<span class="nc" id="L139">					.filename(fileName)</span>
+<span class="nc" id="L140">					.build());</span>
+<span class="nc" id="L141">		}</span>
+<span class="nc" id="L142">	}</span>
+
+	public static List&lt;File&gt; sftpFileTransfer(ChannelSftp sftpChannel, List&lt;File&gt; files, String sourceDir, String destDir) throws JSchException  {
+<span class="nc" id="L145">		List&lt;File&gt; successFiles = new ArrayList&lt;&gt;();</span>
+		//sftpChannel.cd(destDir);
+<span class="nc" id="L147">		sftpChannel.connect();</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">		for(File localFile :files ){</span>
+<span class="nc" id="L149">			logger.info(&quot;Storing the file into remote Directory &quot;+ localFile.getAbsolutePath());</span>
+<span class="nc" id="L150">			logger.info(&quot;destDir : &quot; +destDir);</span>
+			try{
+<span class="nc" id="L152">				sftpChannel.put(localFile.getAbsolutePath(), destDir + Constants.BACK_SLASH);</span>
+<span class="nc" id="L153">				successFiles.add(localFile);</span>
+<span class="nc" id="L154">			} catch (SftpException e) {</span>
+<span class="nc" id="L155">				e.printStackTrace();</span>
+<span class="nc" id="L156">			}</span>
+<span class="nc" id="L157">			logger.info(&quot;Stored the file into remote Directory &quot;+ localFile.getAbsolutePath());</span>
+<span class="nc" id="L158">		}</span>
+<span class="nc" id="L159">		sftpChannel.exit();</span>
+<span class="nc" id="L160">		return successFiles;</span>
+	}
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

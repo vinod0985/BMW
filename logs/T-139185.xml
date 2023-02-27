@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Ticket>
+    <TicketID>T-139185</TicketID>
+    <Header>MayDrop</Header>
+    <Description>MayDrop</Description>
+    <Boxes>
+        <Box>
+            <ProductNumber>CXP2020276</ProductNumber>
+            <RState>R2D</RState>
+            <Description>May_drop</Description>
+            <FileSize>1681131</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>AO</FunctionDesignation>
+            <MD5>99b15034dc65a48ee363c392a070251e</MD5>
+            <SHA256>bf3f6f356bafecc2af37f548c98c2ee28e1615e2666d9676c203125aceaec015</SHA256>
+            <Filename>CXP2020276-R2D.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>1/109 47-ABC 112 2429/7-01</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>ReleaseNote_1_109_47-ABC_112_2429_7-01-A_EN_CXP2020276-R2D.txt</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>1/109 29-CXP 105 0478/5</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Roxa.txt</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-SMO/CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>SMO_CXP2020276-R2D.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Word_document_3.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>AS</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046/1</DocumentNumber>
+                    <RevState>C</RevState>
+                    <Filename>StartNot_empty.Word</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 105 0478/2</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_-_Gask3.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Word_document_3.docx</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>AS</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+        <Box>
+            <ProductNumber>CXP2020276</ProductNumber>
+            <RState>R2B</RState>
+            <Description></Description>
+            <FileSize>974013</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>AO</FunctionDesignation>
+            <MD5>aa3e1c2c3d7dcbf7b9df0996342c6530</MD5>
+            <SHA256>141727f7bd310c9a037aeae26862b462d9300ed2396bac70b3ba0365719338c1</SHA256>
+            <Filename>CXP2020276-R2B.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>1/109 47-ABC 112 2429/7-01</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>ReleaseNote_1_109_47-ABC_112_2429_7-01-A_EN_CXP2020276-R2B.txt</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-SMO/CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>SMO_CXP2020276-R2B.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 105 0478/2</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_-_Gask3.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Word_document_3.docx</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>AS</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+        <Box>
+            <ProductNumber>CXP2020276</ProductNumber>
+            <RState>R2H</RState>
+            <Description>May_drop</Description>
+            <FileSize>1641377</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>AO</FunctionDesignation>
+            <MD5>f87b2d79ef97f2e182a14a3121aac280</MD5>
+            <SHA256>ddc3bfc67e65be18ad5853e850e98115583328e6dfeba5a61489e9c5271a109c</SHA256>
+            <Filename>CXP2020276-R2H.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>190 89-SMO/CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>SMO_CXP2020276-R2H.xml</Filename>
+                    <DataFormat>XMLV1R0</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>1/109 47-ABC 112 2429/7-01</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>ReleaseNote_1_109_47-ABC_112_2429_7-01-A_EN_CXP2020276-R2H.txt</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Word_document_3.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>AS</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 105 0478/2</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Test_-_Gask3.pdf</Filename>
+                    <DataFormat>PDF_ANY_VERSION</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046</DocumentNumber>
+                    <RevState>A</RevState>
+                    <Filename>Word_document_3.docx</Filename>
+                    <DataFormat>MSWORD_DOCX</DataFormat>
+                    <LanguageCode>AS</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+    </Boxes>
+</Ticket>

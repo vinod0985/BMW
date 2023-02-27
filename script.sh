@@ -1,0 +1,1 @@
+sonar-scanner -Dsonar.projectKey=eric-swgwda1 -Dsonar.host.url=http://10.120.10.102:9000 -Dsonar.login=1038733000123dab0e14f2848c18c32824a6a468 -Dsonar.java.binaries=target/classes -Dsonar.sources=/opt/app/swgwda/startup/projects/eric-swgwda

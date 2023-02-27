@@ -1,0 +1,12 @@
+sonar.jdbc.username=sonar
+sonar.jdbc.password=sonar
+sonar.login=admin
+sonar.password=Admin@123
+sonar.host.url=http://10.120.10.102:9000/
+#sonar.projectKey=
+sonar.projectKey=eric-swgwda
+sonar.projectName=eric-swgwda
+#----- PostgreSQL 9.6 or greater
+# By default the schema named "public" is used. It can be overridden with the parameter "currentSchema".
+sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
+#sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube?currentSchema=my_schema

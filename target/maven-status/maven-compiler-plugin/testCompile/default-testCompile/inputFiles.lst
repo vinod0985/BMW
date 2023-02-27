@@ -1,0 +1,7 @@
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/database/DaoTest.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/controller/ControllerApplicationTests.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/database/TestDBConnection.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/controller/TestControllerApplication.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/services/AzureTokenServiceTest.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/database/TestDatabase.java
+/opt/app/swgwda/startup/projects/eric-swgwda/src/test/java/com/ericsson/swgw/da/controller/TestINIFileRead.java

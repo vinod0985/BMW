@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PullTicketXMLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.services</a> &gt; <span class="el_source">PullTicketXMLService.java</span></div><h1>PullTicketXMLService.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.services;
+
+/*###################################################################################
+#  @Name           :   PullTicketXMLService.java
+#
+#  @Created        :   Oct Drop 2022
+#
+#  @Description    :   To pull ticket XML from SW Gateway
+#
+#  @Programmer     :   Rajni Kumari
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2210
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZUAMJRK(Rajni)      21-sept-2022            Download action
+######################################################################################*/
+
+import java.io.File;
+import java.sql.SQLException;
+import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+
+import com.ericsson.swgw.da.bean.Webhook;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.swgw.bean.TicketXMLGenerator;
+import com.ericsson.swgw.da.utils.PullUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+public class PullTicketXMLService {
+
+<span class="fc" id="L41">	private static  Logger logger = LogManager.getLogger(PullTicketXMLService.class);</span>
+	public static Webhook webhook;
+<span class="fc" id="L43">	public static String bearerToken = &quot;&quot;;</span>
+	//private static  LoadProperties loadProperties;
+	private static  IniConfig iniConfig;
+
+<span class="fc" id="L47">	public PullTicketXMLService(Webhook lWebhook) {</span>
+<span class="fc" id="L48">		webhook = lWebhook;		</span>
+<span class="fc" id="L49">	}</span>
+	
+<span class="nc" id="L51">	public PullTicketXMLService(Webhook lWebhook, IniConfig liniConfig) {</span>
+<span class="nc" id="L52">		webhook = lWebhook;</span>
+<span class="nc" id="L53">		iniConfig = liniConfig;</span>
+		
+<span class="nc" id="L55">	}</span>
+
+	/**
+	 * @param sbearerToken
+	 * @param string
+	 * @param filePath
+	 * @throws JSONException 
+	 * @throws SQLException 
+	 */
+
+	public void pullTicketxml(String filePath,String apiUrl) throws JSONException, SQLException {
+		
+		
+<span class="nc" id="L68">			String fileName = webhook.getTicket() + Constants.XML_EXT;</span>
+
+<span class="nc" id="L70">			String pullTicketURL = getPullTicketxmlURL(apiUrl);</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">			if (!StringUtils.isOnlyWhitespaceOrEmpty(pullTicketURL)) {</span>
+<span class="nc" id="L73">				PullUtils.pullMethod(pullTicketURL, fileName, filePath);</span>
+			}
+		
+<span class="nc" id="L76">	}</span>
+	
+	/**
+	 * @param sbearerToken
+	 * @param string
+	 * @param filePath
+	 * @throws JSONException 
+	 * @throws SQLException 
+	 */
+
+	public Map&lt;String, Object&gt; pullTicketxml(String filePath,String fileName,String pullTicketURL) throws JSONException, SQLException {
+<span class="fc" id="L87">		System.out.println(&quot;pullTicketURL ::::&quot;+pullTicketURL);</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(pullTicketURL)) {			</span>
+<span class="fc" id="L89">			Map&lt;String, Object&gt; returnMap = PullUtils.pullMethod(pullTicketURL, fileName, filePath);</span>
+<span class="fc" id="L90">			return returnMap;			</span>
+		}		
+<span class="nc" id="L92">		return null;	</span>
+	}
+	
+	public static TicketXMLGenerator getTicketXMLGenerator(File file){
+		
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">		if(file != null &amp;&amp; file.exists()){</span>
+<span class="fc" id="L98">			TicketXMLGenerator ticketXML = collectInputAndSaveAsXMLObject(file);</span>
+<span class="fc" id="L99">			return ticketXML;</span>
+		}else {
+<span class="nc" id="L101">			return null;</span>
+			//logger.error(&quot;Ticket XML Not found in the temporary location ::&quot; + logsPath + Constants.BACK_SLASH + fileName );
+		}	
+	}
+
+	public String getPullTicketxmlURL(String apiUrl) {
+		
+<span class="fc" id="L108">		StringBuilder ticketXmlBuilder = new StringBuilder();</span>
+<span class="fc" id="L109">		ticketXmlBuilder.append(apiUrl);</span>
+<span class="fc" id="L110">		ticketXmlBuilder.append(Constants.TICKET_XML_URL);</span>
+<span class="fc" id="L111">		ticketXmlBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L112">		ticketXmlBuilder.append(Constants.EUFT_EQUAL_TO);</span>
+<span class="fc" id="L113">		ticketXmlBuilder.append( webhook.getEuft());</span>
+<span class="fc" id="L114">		ticketXmlBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L115">		ticketXmlBuilder.append(Constants.TICKET_EQUAL_TO);</span>
+<span class="fc" id="L116">		ticketXmlBuilder.append(webhook.getTicket());</span>
+
+<span class="fc" id="L118">		return ticketXmlBuilder.toString();</span>
+		
+	}
+	
+	
+	public static TicketXMLGenerator collectInputAndSaveAsXMLObject(File file){
+		try{
+<span class="fc" id="L125">			JAXBContext jaxbContext1 = JAXBContext.newInstance(TicketXMLGenerator.class);</span>
+<span class="fc" id="L126">			Unmarshaller jaxbUnmarshaller = jaxbContext1.createUnmarshaller();</span>
+<span class="fc" id="L127">			TicketXMLGenerator ticketXML = (TicketXMLGenerator) jaxbUnmarshaller.unmarshal(file);</span>
+<span class="fc" id="L128">			return ticketXML;</span>
+<span class="nc" id="L129">		}catch(Exception e){</span>
+<span class="nc" id="L130">			e.printStackTrace();</span>
+<span class="nc" id="L131">			logger.debug(&quot;::::::::::::::::::::::::&quot; + e.getMessage());</span>
+		}
+		
+<span class="nc" id="L134">		return null;		</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

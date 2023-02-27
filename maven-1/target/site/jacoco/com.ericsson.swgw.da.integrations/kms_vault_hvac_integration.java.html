@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>kms_vault_hvac_integration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.integrations</a> &gt; <span class="el_source">kms_vault_hvac_integration.java</span></div><h1>kms_vault_hvac_integration.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.integrations;
+
+import com.bettercloud.vault.Vault;
+import com.bettercloud.vault.VaultConfig;
+import com.bettercloud.vault.VaultException;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.constants.IntegrationConstants;
+
+<span class="nc" id="L9">public class kms_vault_hvac_integration {</span>
+<span class="nc" id="L10">	 public static String VAULT_SERVER_PATH = Constants.EMPTY;</span>
+<span class="nc" id="L11">	 public static String TOKEN = Constants.EMPTY;</span>
+	 
+	 static{
+<span class="nc" id="L14">		 TOKEN = IntegrationConstants.VAULT_SERVER_PATH ;</span>
+<span class="nc" id="L15">		 TOKEN = IntegrationConstants.TOKEN;</span>
+<span class="nc" id="L16">	 }</span>
+	 
+	 public static Vault  getVaultConnection() throws VaultException{
+<span class="nc" id="L19">		 final VaultConfig vaultConfig = new VaultConfig().address(VAULT_SERVER_PATH).token(TOKEN).build();</span>
+<span class="nc" id="L20">	     final Vault vault = new Vault(vaultConfig);</span>
+		 
+<span class="nc" id="L22">		return vault;		 </span>
+	 }
+	 
+	 public static String getClientKey() throws VaultException{
+<span class="nc" id="L26">		 Vault vault = getVaultConnection();</span>
+<span class="nc" id="L27">		 final String userName = vault.logical().read(IntegrationConstants.PATH).getData().get(IntegrationConstants.CLIENT_KEY);</span>
+		 
+<span class="nc bnc" id="L29" title="All 2 branches missed.">		 return (null !=  userName) ? userName : Constants.EMPTY;		 </span>
+	 }
+	 
+	 public static String getSecretKey() throws VaultException{
+<span class="nc" id="L33">		 Vault vault = getVaultConnection();</span>
+<span class="nc" id="L34">		 final String password = vault.logical().read(IntegrationConstants.PATH).getData().get(IntegrationConstants.SECRET_KEY);</span>
+		 
+<span class="nc bnc" id="L36" title="All 2 branches missed.">		return (null !=  password) ? password : Constants.EMPTY;		 </span>
+	 }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

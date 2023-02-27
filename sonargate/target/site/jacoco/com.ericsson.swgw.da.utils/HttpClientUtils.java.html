@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpClientUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.utils</a> &gt; <span class="el_source">HttpClientUtils.java</span></div><h1>HttpClientUtils.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.utils;
+
+/*###################################################################################
+#  @Name           :   HttpClientUtils.java
+#
+#  @Created        :   Sep Drop 2022
+#
+#  @Description    :   To create http methods
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2209
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      29-Aug-2022            Use of http methods
+######################################################################################*/
+
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
+public class HttpClientUtils {
+	
+<span class="fc" id="L37">	private static  Logger logger = LogManager.getLogger(HttpClientUtils.class);</span>
+
+	private HttpClientUtils() {
+	}
+
+	public static HttpGet createGet(String url) throws ClientProtocolException,
+			IOException {
+<span class="nc" id="L44">		HttpGet httpget = new HttpGet(url);</span>
+
+<span class="nc" id="L46">		return httpget;</span>
+	}
+
+	public static HttpPost createPost(String postUrl, String content)
+			throws ClientProtocolException, IOException {
+<span class="fc" id="L51">		HttpPost httppost = new HttpPost(postUrl);</span>
+<span class="fc" id="L52">		EntityBuilder builder = EntityBuilder.create();</span>
+<span class="fc" id="L53">		builder.setText(content);</span>
+<span class="fc" id="L54">		HttpEntity entity = builder.build();</span>
+<span class="fc" id="L55">		httppost.setEntity(entity);</span>
+<span class="fc" id="L56">		return httppost;</span>
+	}
+
+	public static HttpPost createPost(String postUrl, File file)
+			throws ClientProtocolException, IOException {
+<span class="nc" id="L61">		HttpPost httppost = new HttpPost(postUrl);</span>
+<span class="nc" id="L62">		EntityBuilder builder = EntityBuilder.create();</span>
+<span class="nc" id="L63">		builder.setFile(file);</span>
+<span class="nc" id="L64">		HttpEntity entity = builder.build();</span>
+<span class="nc" id="L65">		httppost.setEntity(entity);</span>
+<span class="nc" id="L66">		return httppost;</span>
+	}
+
+	public static CloseableHttpClient createDefaultHttpClient()
+			throws ClientProtocolException, IOException {
+<span class="fc" id="L71">		return HttpClients.createDefault();</span>
+	}
+
+	public static CloseableHttpClient createMinimalHttpClient()
+			throws ClientProtocolException, IOException {
+<span class="nc" id="L76">		logger.info(&quot;About to create closable http clinet with minimal&quot;);</span>
+<span class="nc" id="L77">		return HttpClients.createMinimal();</span>
+	}
+
+	public static boolean isStatusCodeOk(int statusCode) {
+<span class="pc bpc" id="L81" title="2 of 4 branches missed.">		if (statusCode &lt; 200 || statusCode &gt; 206) {</span>
+<span class="nc" id="L82">			return false;</span>
+		} else {
+<span class="fc" id="L84">			return true;</span>
+		}
+
+	}
+	
+	 public static void validateStatusCode(int status) throws Exception {
+<span class="nc bnc" id="L90" title="All 4 branches missed.">	        if (status &lt; 200 || status &gt; 206) {</span>
+	            /*System.out.println(&quot;Could not execute the http request due to status code '&quot; + status
+	                    + &quot;' is returned from other system&quot;);*/
+<span class="nc" id="L93">	            throw new Exception(&quot;Could not execute the http request due to status code '&quot;</span>
+	                    + status + &quot;' is returned from other system&quot;);
+	        }
+
+
+<span class="nc" id="L98">	   }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

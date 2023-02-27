@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChecksumValidation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.validations</a> &gt; <span class="el_source">ChecksumValidation.java</span></div><h1>ChecksumValidation.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.validations;
+
+/*###################################################################################
+#  @Name           :   ChecksumValidation.java
+#
+#  @Created        :   Oct Drop 2022
+#
+#  @Description    :   To validate checksum for the packages download from SW Gateway
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2210
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      21-Sept-2022            validate checksum for the packages download from SW Gateway
+######################################################################################*/
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.ericsson.swgw.da.bean.Checksum;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.exception.ChecksumMismatchException;
+import com.ericsson.swgw.da.utils.ChecksumUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+public class ChecksumValidation {
+<span class="nc" id="L38">	private static  Logger logger = LogManager.getLogger(ChecksumValidation.class);</span>
+<span class="nc" id="L39">	private ChecksumValidation() {</span>
+<span class="nc" id="L40">	    throw new IllegalStateException(&quot; Validation Class &quot;);</span>
+	  }
+	
+	/**
+	 * @param allHeaders  Response Headers received from pull product 
+	 * @param pullBoxFile    path where files are downloaded
+	 * @param checksum     Received product from webhook payload
+	 * @param json 
+	 * @throws IOException 
+	 * @throws JSONException 
+	 */
+	public static String parseChecksum(Map&lt;String, List&lt;String&gt;&gt; allHeaders,
+			File pullBoxFile, Checksum checksum, JSONObject json)
+			throws JSONException {
+<span class="nc" id="L54">		String checksumMissMatchTicketXml = &quot;&quot;;</span>
+<span class="nc" id="L55">		String checksumMissMatchResponseHeader = &quot;&quot;;</span>
+<span class="nc" id="L56">		String checksumMissMatch = &quot;&quot;;</span>
+<span class="nc" id="L57">		String checksumMissMatchpayload = &quot;&quot;;</span>
+<span class="nc" id="L58">		String sha256 = ChecksumUtils.calculateChecksum(pullBoxFile,</span>
+				Constants.CHECKSUM_SHA256);
+<span class="nc" id="L60">		String md5 = ChecksumUtils.calculateChecksum(pullBoxFile,</span>
+				Constants.CHECKSUM_MD5);
+<span class="nc" id="L62">		String crc32 = ChecksumUtils.calculateChecksum(pullBoxFile,</span>
+				Constants.CHECKSUM_CRC32);
+<span class="nc" id="L64">		logger.debug(&quot;calculateBoxChecksum :: sha256 : &quot; + sha256);</span>
+<span class="nc" id="L65">		logger.debug(&quot;calculateBoxChecksum :: md5 : &quot; + md5);</span>
+<span class="nc" id="L66">		logger.debug(&quot;calculateBoxChecksum :: crc32 : &quot; + crc32);</span>
+<span class="nc" id="L67">		checksumMissMatchResponseHeader = validateBoxChecksumWithResHeader(</span>
+				sha256, md5, crc32, allHeaders);
+<span class="nc" id="L69">		checksumMissMatch = checksumMissMatchResponseHeader;</span>
+
+<span class="nc" id="L71">		if (StringUtils</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">				.isOnlyWhitespaceOrEmpty(checksumMissMatchResponseHeader)) {</span>
+<span class="nc" id="L73">			checksumMissMatchTicketXml = validateBoxChecksumWithTicketXmlFile(</span>
+					sha256, md5, json);
+<span class="nc" id="L75">			checksumMissMatch = checksumMissMatchTicketXml;</span>
+		}
+
+<span class="nc bnc" id="L78" title="All 4 branches missed.">		if (StringUtils.isOnlyWhitespaceOrEmpty(checksumMissMatchTicketXml)</span>
+				&amp;&amp; null != checksum) {
+<span class="nc" id="L80">			checksumMissMatchpayload = validateBoxChecksumWithPayload(sha256,</span>
+					md5, checksum);
+<span class="nc" id="L82">			checksumMissMatch = checksumMissMatchpayload;</span>
+		}
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(checksumMissMatch)) {</span>
+<span class="nc" id="L85">			pullBoxFile.delete();</span>
+<span class="nc" id="L86">			logger.error(&quot;Checksum Mismatched for &quot; + pullBoxFile + &quot; due to &quot;</span>
+					+ checksumMissMatch);
+<span class="nc" id="L88">			raiseChecksumException(pullBoxFile, checksumMissMatch);</span>
+
+		} else {
+<span class="nc" id="L91">			logger.info(&quot;Checksum Matched with &quot; + pullBoxFile);</span>
+		}
+<span class="nc" id="L93">		return checksumMissMatch;</span>
+	}
+
+	private static String validateBoxChecksumWithPayload(String sha256,
+			String md5, Checksum checksum) {
+<span class="nc" id="L98">		String payloadMD5 = checksum.getMD5();</span>
+<span class="nc" id="L99">		logger.debug(&quot;payloadChecksum :: md5 :&quot;+payloadMD5);</span>
+<span class="nc" id="L100">		String payloadSHA256 = checksum.getSHA256();</span>
+<span class="nc" id="L101">		logger.debug(&quot;payloadChecksum :: sha256 :&quot;+payloadSHA256);</span>
+<span class="nc" id="L102">		String strChecksumMissMatchPayload = &quot;&quot;;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">		 if(!sha256.equalsIgnoreCase(payloadSHA256) ){</span>
+<span class="nc" id="L104">			 strChecksumMissMatchPayload = &quot;payloadSHA256&quot;;</span>
+<span class="nc" id="L105">            logger.debug(&quot;Checksum Miss Match for :: payloadSHA256&quot; + payloadSHA256);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        } else if(!md5.equalsIgnoreCase(payloadMD5)){</span>
+<span class="nc" id="L107">        	strChecksumMissMatchPayload = &quot;payloadMD5&quot;;</span>
+<span class="nc" id="L108">            logger.debug(&quot;Checksum Miss Match for :: payloadMD5 &quot; + payloadMD5);</span>
+        }
+		 
+<span class="nc" id="L111">			return strChecksumMissMatchPayload;</span>
+		
+	}
+
+	public static String validateBoxChecksumWithTicketXmlFile(String sha256, String md5, JSONObject json) throws JSONException {
+<span class="nc" id="L116">		String ticketXmlsHA256 = json.getString(Constants.CHECKSUM_SHA256);</span>
+<span class="nc" id="L117">		logger.debug(&quot;ticketXmlChecksum :: sha256 :&quot;+ticketXmlsHA256);</span>
+<span class="nc" id="L118">		String ticketXmlmD5 = json.getString(Constants.CHECKSUM_MD5);</span>
+<span class="nc" id="L119">		logger.debug(&quot;ticketXmlChecksum :: md5 :&quot;+ticketXmlmD5);</span>
+<span class="nc" id="L120">		String strChecksumMissMatchTicketXml = &quot;&quot;;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (!sha256.equalsIgnoreCase(ticketXmlsHA256) ) {            </span>
+<span class="nc" id="L122">            strChecksumMissMatchTicketXml = &quot;ticketXmlsHA256&quot;;</span>
+<span class="nc" id="L123">             logger.debug(&quot;Checksum Miss Match for :: ticketXmlsHA256&quot; + ticketXmlsHA256);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        } else if (!md5.equalsIgnoreCase(ticketXmlmD5)){</span>
+<span class="nc" id="L125">            strChecksumMissMatchTicketXml = &quot;headerMD5&quot;;</span>
+<span class="nc" id="L126">            logger.debug(&quot;Checksum Miss Match for :: ticketXmlmD5&quot; + ticketXmlmD5);</span>
+        }
+        
+<span class="nc" id="L129">		return strChecksumMissMatchTicketXml;</span>
+		
+	}
+
+	/**
+	 * @param sha256      Calculated sha256 value for downloaded product
+	 * @param md5         Calculated sha256 value for downloaded product
+	 * @param crc32       Calculated sha256 value for downloaded product
+	 * @param allHeaders  Response Headers received from pull product
+	 * @param filePath    Path where files are downloaded
+	 */
+	public static String validateBoxChecksumWithResHeader(String sha256, String md5,
+			String crc32, Map&lt;String, List&lt;String&gt;&gt; allHeaders) {
+<span class="nc" id="L142">		String headerSHA256 =&quot;&quot;;</span>
+<span class="nc" id="L143">		String headerMD5 = &quot;&quot;;</span>
+<span class="nc" id="L144">		String headerCRC32 = &quot;&quot;;</span>
+		
+<span class="nc bnc" id="L146" title="All 2 branches missed.">		if(allHeaders.containsKey(Constants.CHECKSUM_SHA256)){</span>
+<span class="nc" id="L147">			StringBuilder sbSHA256 = new StringBuilder(allHeaders.get(Constants.CHECKSUM_SHA256).toString());</span>
+<span class="nc" id="L148">			sbSHA256.deleteCharAt(sbSHA256.length() - 1);</span>
+<span class="nc" id="L149">			sbSHA256.deleteCharAt(0);</span>
+<span class="nc" id="L150">			headerSHA256 = sbSHA256.toString();</span>
+<span class="nc" id="L151">			logger.debug(&quot;pullHeadersChecksum :: sha256 :&quot;+headerSHA256);</span>
+		}  
+<span class="nc bnc" id="L153" title="All 2 branches missed.">		if(allHeaders.containsKey(Constants.CHECKSUM_CRC32)){</span>
+<span class="nc" id="L154">			StringBuilder sbCRC32 = new StringBuilder(allHeaders.get(Constants.CHECKSUM_CRC32).toString());</span>
+<span class="nc" id="L155">			sbCRC32.deleteCharAt(sbCRC32.length() - 1);</span>
+<span class="nc" id="L156">			sbCRC32.deleteCharAt(0);</span>
+<span class="nc" id="L157">			headerCRC32 = sbCRC32.toString();</span>
+<span class="nc" id="L158">			logger.debug(&quot;pullHeadersChecksum :: crc32 :&quot;+headerCRC32);</span>
+		}  
+<span class="nc bnc" id="L160" title="All 2 branches missed.">		if(allHeaders.containsKey(Constants.CHECKSUM_MD5)){</span>
+<span class="nc" id="L161">			StringBuilder sbMD5 = new StringBuilder(allHeaders.get(Constants.CHECKSUM_MD5).toString());</span>
+<span class="nc" id="L162">			sbMD5.deleteCharAt(sbMD5.length() - 1);</span>
+<span class="nc" id="L163">			sbMD5.delete(0,6);</span>
+<span class="nc" id="L164">			headerMD5 = sbMD5.toString();</span>
+<span class="nc" id="L165">			logger.debug(&quot;pullHeadersChecksum :: md5 :&quot;+headerMD5);</span>
+		}
+		
+<span class="nc" id="L168">		String strChecksumMissMatch = &quot;&quot;;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (!sha256.equalsIgnoreCase(headerSHA256) ) {            </span>
+<span class="nc" id="L170">            strChecksumMissMatch = &quot;headerSHA256&quot;;</span>
+<span class="nc" id="L171">            logger.debug(&quot;Checksum Miss Match for  :: ResponseHeaderSHA256&quot; + headerSHA256);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        } else if (!md5.equalsIgnoreCase(headerMD5)){</span>
+<span class="nc" id="L173">            strChecksumMissMatch = &quot;headerMD5&quot;;</span>
+<span class="nc" id="L174">            logger.debug(&quot;Checksum Miss Match for :: ResponseHeaderMD5&quot; + headerMD5);</span>
+        } 
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        else if(!crc32.equalsIgnoreCase(headerCRC32)){</span>
+<span class="nc" id="L177">            strChecksumMissMatch = &quot;headerCRC32&quot;;</span>
+<span class="nc" id="L178">            logger.debug(&quot;Checksum Miss Match for :: ResponseHeaderCRC32&quot; + headerCRC32);</span>
+        } 
+<span class="nc" id="L180">		return strChecksumMissMatch;</span>
+	}
+
+	/**
+	 * @param pullBoxFile
+	 * @param strChecksumMissMatch
+	 */
+	public static void raiseChecksumException(File pullBoxFile, String strChecksumMissMatch) {
+		try {
+<span class="nc" id="L189">			throw new ChecksumMismatchException(strChecksumMissMatch,pullBoxFile);</span>
+<span class="nc" id="L190">		} catch (ChecksumMismatchException e1) {</span>
+<span class="nc" id="L191">			e1.printStackTrace();</span>
+		}
+<span class="nc" id="L193">	}</span>
+
+	public static String validateTicketXmlChecksumWithResHeader(String sha256,
+			String md5, Map&lt;String, List&lt;String&gt;&gt; responseHeadersTicket) {
+
+<span class="nc" id="L198">		String headerSHA256 =&quot;&quot;;</span>
+<span class="nc" id="L199">		String headerMD5 = &quot;&quot;;</span>
+		
+<span class="nc bnc" id="L201" title="All 2 branches missed.">		if(responseHeadersTicket.containsKey(Constants.CHECKSUM_SHA256)){</span>
+<span class="nc" id="L202">			StringBuilder sbSHA256 = new StringBuilder(responseHeadersTicket.get(Constants.CHECKSUM_SHA256).toString());</span>
+<span class="nc" id="L203">			sbSHA256.deleteCharAt(sbSHA256.length() - 1);</span>
+<span class="nc" id="L204">			sbSHA256.deleteCharAt(0);</span>
+<span class="nc" id="L205">			headerSHA256 = sbSHA256.toString();</span>
+<span class="nc" id="L206">			System.out.println(&quot;pullHeadersChecksum :: sha256 :&quot;+headerSHA256);</span>
+		} 
+		
+<span class="nc bnc" id="L209" title="All 2 branches missed.">		if(responseHeadersTicket.containsKey(Constants.CHECKSUM_MD5)){</span>
+<span class="nc" id="L210">			StringBuilder sbMD5 = new StringBuilder(responseHeadersTicket.get(Constants.CHECKSUM_MD5).toString());</span>
+<span class="nc" id="L211">			sbMD5.deleteCharAt(sbMD5.length() - 1);</span>
+<span class="nc" id="L212">			sbMD5.deleteCharAt(0);</span>
+<span class="nc" id="L213">			headerMD5 = sbMD5.toString();</span>
+<span class="nc" id="L214">			System.out.println(&quot;pullHeadersChecksum :: md5 :&quot;+headerMD5);</span>
+		}
+		
+<span class="nc" id="L217">		String strChecksumMissMatch = &quot;&quot;;</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (!sha256.equalsIgnoreCase(headerSHA256) ) {            </span>
+<span class="nc" id="L219">            strChecksumMissMatch = &quot;headerSHA256&quot;;</span>
+<span class="nc" id="L220">            logger.debug(&quot;Checksum Miss Match for  :: ResponseHeaderSHA256&quot; + headerSHA256);</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        } else if (!md5.equalsIgnoreCase(headerMD5)){</span>
+<span class="nc" id="L222">            strChecksumMissMatch = &quot;headerMD5&quot;;</span>
+<span class="nc" id="L223">            logger.debug(&quot;Checksum Miss Match for :: ResponseHeaderMD5&quot; + headerMD5);</span>
+        } 
+        
+<span class="nc" id="L226">		return strChecksumMissMatch;</span>
+	
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Ticket>
+    <TicketID>T-145141</TicketID>
+    <Header>test for feb release</Header>
+    <Description>test for feb release</Description>
+    <Boxes>
+        <Box>
+            <ProductNumber>CXP2021196</ProductNumber>
+            <RState>R13A</RState>
+            <Description></Description>
+            <FileSize>27356</FileSize>
+            <ProductType>Deliverable</ProductType>
+            <FunctionDesignation>SWGW - Test data1</FunctionDesignation>
+            <MD5>793751d1c5c80b79114ca4bd2ad64791</MD5>
+            <SHA256>7c7ec0e254339d1b543d03110f5d889f14068e13f265ff48e19f276568c9bf60</SHA256>
+            <Filename>CXP2021196-R13A.zip</Filename>
+            <Documents>
+                <Document>
+                    <DocumentNumber>190 89-CXP 902 0046/1</DocumentNumber>
+                    <RevState>C</RevState>
+                    <Filename>StartNot_empty.Word</Filename>
+                    <DataFormat>TEXT</DataFormat>
+                    <LanguageCode>EN</LanguageCode>
+                </Document>
+            </Documents>
+        </Box>
+    </Boxes>
+</Ticket>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PullProductService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">eric-swgwda</a> &gt; <a href="index.source.html" class="el_package">com.ericsson.swgw.da.services</a> &gt; <span class="el_source">PullProductService.java</span></div><h1>PullProductService.java</h1><pre class="source lang-java linenums">package com.ericsson.swgw.da.services;
+
+/*###################################################################################
+#  @Name           :   PullProductService.java
+#
+#  @Created        :   Sep Drop 2022
+#
+#  @Description    :   To  pull SW packages from SW Gateway
+#
+#  @Programmer     :   Eswar D
+#
+#  @Organization   :   HCL
+#
+#  @Release        :   MR2209
+#
+#  @History        :
+#      Xsignum/Esignum :   Date(DD-MM-YYYY)    :   description
+#      ZDARESW(Eswar)      29-Aug-2022            Download action
+######################################################################################*/
+
+import java.io.File;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import com.ericsson.swgw.da.bean.Checksum;
+import com.ericsson.swgw.da.bean.Webhook;
+import com.ericsson.swgw.da.constants.Constants;
+import com.ericsson.swgw.da.properties.IniConfig;
+import com.ericsson.swgw.da.utils.PullUtils;
+import com.ericsson.swgw.da.utils.StringUtils;
+
+public class PullProductService {
+	
+<span class="fc" id="L37">	private static  Logger logger = LogManager.getLogger(PullProductService.class);</span>
+
+	private static Webhook webhook ;
+	
+	
+<span class="fc" id="L42">	public PullProductService (Webhook lWebhook){</span>
+<span class="fc" id="L43">		webhook = lWebhook;</span>
+<span class="fc" id="L44">	}</span>
+	
+	/**
+	 * @param sbearerToken
+	 * @param string2 
+	 * @param filePath 
+	 * @param productVersion 
+	 * @param productNumber 
+	 * @param checksum 
+	 * @throws Exception 
+	 */
+	@SuppressWarnings({ &quot;unused&quot;, &quot;unchecked&quot; })
+	public void pullProduct(String filePath, String apiUrl, String productNumber, String productVersion, Checksum checksum) throws Exception {
+<span class="nc" id="L57">		String fileName = productNumber + &quot;-&quot; + productVersion +&quot;.zip&quot;;</span>
+<span class="nc" id="L58">		String pullURL = getPullProductURL(productNumber, productVersion, apiUrl);</span>
+		
+<span class="nc bnc" id="L60" title="All 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(pullURL)) {</span>
+					
+			@SuppressWarnings(&quot;rawtypes&quot;)
+<span class="nc" id="L63">			Map returnMap = PullUtils.pullMethod(pullURL, fileName, filePath);</span>
+<span class="nc" id="L64">			logger.debug(&quot;downloadDir::::::::::::::&quot;+filePath);</span>
+<span class="nc" id="L65">			java.io.File file =  null;</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">			if(returnMap.containsKey(&quot;file&quot;)){</span>
+<span class="nc" id="L67">				file = (File) returnMap.get(&quot;file&quot;);</span>
+			}else {
+<span class="nc" id="L69">				file = new java.io.File(filePath + Constants.BACK_SLASH+ fileName);</span>
+			}
+			
+<span class="nc bnc" id="L72" title="All 2 branches missed.">			if(returnMap.containsKey(&quot;headerFields&quot;)){</span>
+<span class="nc" id="L73">				Map&lt;String, List&lt;String&gt;&gt; responseHeaders = (Map&lt;String, List&lt;String&gt;&gt;) returnMap.get(&quot;headerFields&quot;);</span>
+			}
+		}
+<span class="nc" id="L76">	}</span>
+
+	/**
+	 * @param product
+	 * @param apiUrl 
+	 * @return
+	 */
+	private static String getPullProductURL(String productNumber, String productVersion, String apiUrl) {
+		
+		
+<span class="fc" id="L86">		StringBuilder pullProductBuilder = new StringBuilder();</span>
+<span class="fc" id="L87">		pullProductBuilder.append(apiUrl);</span>
+<span class="fc" id="L88">		pullProductBuilder.append(Constants.PULL_PRODUCT_URL);</span>
+<span class="fc" id="L89">		pullProductBuilder.append(Constants.PRODUCT_NO_EQUAL_TO);</span>
+<span class="fc" id="L90">		pullProductBuilder.append(productNumber);</span>
+<span class="fc" id="L91">		pullProductBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L92">		pullProductBuilder.append(Constants.RSTATE_NO_EQUAL_TO);</span>
+<span class="fc" id="L93">		pullProductBuilder.append(productVersion);</span>
+<span class="fc" id="L94">		pullProductBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L95">		pullProductBuilder.append(Constants.TICKET_ID_EQUAL_TO);</span>
+<span class="fc" id="L96">		pullProductBuilder.append( webhook.getTicket());</span>
+<span class="fc" id="L97">		pullProductBuilder.append(Constants.AMPERSAND);</span>
+<span class="fc" id="L98">		pullProductBuilder.append(Constants.EUFT_NO_EQUAL_TO);</span>
+<span class="fc" id="L99">		pullProductBuilder.append(webhook.getEuft());</span>
+
+<span class="fc" id="L101">		return pullProductBuilder.toString();				</span>
+		
+	}
+
+	
+	public Map&lt;String, Object&gt; pullProduct(String filePath, String productNumber, String productVersion) throws  JSONException, SQLException {
+<span class="fc" id="L107">		String boxName = &quot;&quot;;</span>
+<span class="fc" id="L108">		StringBuilder sbProdFileName = new StringBuilder();</span>
+<span class="fc" id="L109">		sbProdFileName.append(productNumber);</span>
+<span class="fc" id="L110">		sbProdFileName.append(&quot;-&quot;);</span>
+<span class="fc" id="L111">		sbProdFileName.append(productVersion);</span>
+<span class="fc" id="L112">		sbProdFileName.append(&quot;.zip&quot;);</span>
+<span class="fc" id="L113">		String fileName = sbProdFileName.toString();</span>
+<span class="fc" id="L114">		boxName = fileName.replace(&quot;/&quot;, &quot;_&quot;).replaceAll(&quot;\\s&quot;, &quot;&quot;);</span>
+<span class="fc" id="L115">		String pullURL = getPullProductURL(productNumber, productVersion, IniConfig.getSwgwApiURL());</span>
+		
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">		if (!StringUtils.isOnlyWhitespaceOrEmpty(pullURL)) {</span>
+<span class="fc" id="L118">			logger.debug(&quot;pull Product ::::::&quot;+pullURL);</span>
+<span class="fc" id="L119">			Map&lt;String, Object&gt; returnMap = PullUtils.pullMethod(pullURL, boxName, filePath);</span>
+<span class="fc" id="L120">			return returnMap;</span>
+		}
+<span class="nc" id="L122">		return null;</span>
+	}
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
